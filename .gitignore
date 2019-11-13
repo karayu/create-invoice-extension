@@ -1,3 +1,4 @@
+.DS_Store
 # Logs
 logs
 *.log
@@ -63,4 +64,4 @@ node_modules/
 
 # dotenv environment variables file
 .env
-firebase.json
+# firebase.json

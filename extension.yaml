@@ -10,8 +10,8 @@ resources:
       sourceDirectory: .
       location: ${LOCATION}
       eventTrigger:
-        eventType: providers/cloud.firestore/eventTypes/ref.create
-        resource: projects/${PROJECT_ID}/databases/(default)/documents/${DB_PATH}
+        eventType: providers/cloud.firestore/eventTypes/document.write
+        resource: projects/${PROJECT_ID}/databases/(default)/documents/${DB_PATH}/{id}
 
 params:
   - param: LOCATION
