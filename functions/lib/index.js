@@ -8,7 +8,8 @@ exports.sendInvoice = functions.database
     .ref("/invoices/{id}")
     .onCreate(async (snap) => {
     try {
-        const payload = snap.val();
+        console.log('Data', snap.val());
+        const payload = JSON.parse(snap.val());
         if (!payload.email || !payload.items.length) {
             console.log("Malformed payload", payload);
             return;

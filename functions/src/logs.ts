@@ -6,6 +6,10 @@ export function error(err: Error) {
   console.log("😞 Unhandled error occurred during processing:", err);
 }
 
+export function invoiceCreatedError(invoice: object) {
+  console.log("😞 Error when creating the invoice:", invoice);
+}
+
 export function customerCreated(id: string) {
   console.log(
     `👤 Created a new customer: https://dashboard.stripe.com/test/customers/${id}`
