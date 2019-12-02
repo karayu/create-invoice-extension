@@ -12,7 +12,7 @@ admin.firestore().collection('invoices').add({
   items: [{
     amount: 1299,
     currency: 'usd',
-    description: 'Three applie'
+    description: 'Three apples'
   }],
 })
 ```
