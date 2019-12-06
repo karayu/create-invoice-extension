@@ -1,19 +1,52 @@
-import * as stripeClient from "stripe";
+import * as Stripe from "stripe";
 import * as functions from "firebase-functions";
 import * as logs from "./logs";
 
-const stripe = stripeClient(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 interface InvoicePayload {
   email: string;
-  items: [
-    {
-      amount: number;
-      currency: string; // TODO: Make currency optional and configure default
-      description: string;
-    }
-  ];
+  items: [OrderItem];
 }
+
+interface OrderItem {
+  amount: number;
+  currency: string;
+  description: string;
+}
+
+const createInvoice = async function(
+  customer: Stripe.customers.ICustomer,
+  orderItems: Array<OrderItem>
+) {
+  try {
+    // Create an invoice item for each item in the datastore JSON
+    const itemPromises = orderItems.map(item => {
+      return stripe.invoiceItems.create({
+        customer: customer.id,
+        amount: item.amount,
+        currency: item.currency,
+        description: item.description
+      });
+    });
+
+    // Create the individual invoice items for this customer
+    const items = await Promise.all(itemPromises);
+
+    // Create an invoice
+    const invoice = await stripe.invoices.create({
+      customer: customer.id,
+      collection_method: "send_invoice",
+      days_until_due: 7, // TODO: Make this configurable with default of 7 days
+      auto_advance: true
+    });
+    
+    return invoice;
+  } catch (e) {
+    logs.stripeError(e);
+    return null;
+  }
+};
 
 // TODO: Use Firestore instead of realtime db and have it take collection name
 export const sendInvoice = functions.database
@@ -30,10 +63,11 @@ export const sendInvoice = functions.database
       logs.start();
 
       // Check to see if we already have a Customer record in Stripe with email address
-      let customer = await stripe.customers.list({ email: payload.email });
+      let customers = await stripe.customers.list({ email: payload.email });
+      let customer;
 
       if (customer.data.length) {
-        customer = customer.data[0];
+        customer = customers.data[0];
         logs.customerRetrieved(customer.id, payload.email);
       } else {
         // Create new Customer on Stripe with email
@@ -41,32 +75,13 @@ export const sendInvoice = functions.database
         customer = await stripe.customers.create({
           email: payload.email,
           metadata: {
-            createdFrom: "Created by Firebase extension" // optional metadata, adds a note  
+            createdFrom: "Created by Firebase extension" // optional metadata, adds a note
           }
         });
         logs.customerCreated(customer.id);
       }
 
-      // Create an invoice item for each item in the datastore JSON
-      const itemPromises = payload.items.map(item => {
-        return stripe.invoiceItems.create({
-          customer: customer.id,
-          amount: item.amount,
-          currency: item.currency,
-          description: item.description
-        });
-      });
-
-      // Create the individual invoice items for this customer
-      const items = await Promise.all(itemPromises);
-
-      // Create an invoice
-      const invoice = await stripe.invoices.create({
-        customer: customer.id,
-        collection_method: "send_invoice",
-        days_until_due: "7", // TODO: Make this configurable with default of 7 days
-        auto_advance: true
-      });
+      const invoice = await createInvoice(customer, payload.items);
 
       if (invoice.id) {
         // Stripe sends an email to the customer
