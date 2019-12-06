@@ -1,4 +1,4 @@
-import * as Stripe from "stripe";
+import Stripe from "stripe";
 import * as functions from "firebase-functions";
 import * as logs from "./logs";
 
@@ -16,31 +16,33 @@ interface OrderItem {
 }
 
 const createInvoice = async function(
-  customer: Stripe.customers.ICustomer,
+  customer: Stripe.Customer,
   orderItems: Array<OrderItem>
 ) {
   try {
     // Create an invoice item for each item in the datastore JSON
-    const itemPromises = orderItems.map(item => {
-      return stripe.invoiceItems.create({
-        customer: customer.id,
-        amount: item.amount,
-        currency: item.currency,
-        description: item.description
-      });
-    });
+    const itemPromises: Array<Promise<Stripe.InvoiceItem>> = orderItems.map(
+      item => {
+        return stripe.invoiceItems.create({
+          customer: customer.id,
+          amount: item.amount,
+          currency: item.currency,
+          description: item.description
+        });
+      }
+    );
 
     // Create the individual invoice items for this customer
-    const items = await Promise.all(itemPromises);
+    const items: Array<Stripe.InvoiceItem> = await Promise.all(itemPromises);
 
     // Create an invoice
-    const invoice = await stripe.invoices.create({
+    const invoice: Stripe.Invoice = await stripe.invoices.create({
       customer: customer.id,
       collection_method: "send_invoice",
       days_until_due: 7, // TODO: Make this configurable with default of 7 days
       auto_advance: true
     });
-    
+
     return invoice;
   } catch (e) {
     logs.stripeError(e);
@@ -61,12 +63,14 @@ export const sendInvoice = functions.database
       }
 
       logs.start();
-
+      
       // Check to see if we already have a Customer record in Stripe with email address
-      let customers = await stripe.customers.list({ email: payload.email });
-      let customer;
+      let customers: Stripe.ApiList<Stripe.Customer> = await stripe.customers.list(
+        { email: payload.email }
+      );
+      let customer: Stripe.Customer;
 
-      if (customer.data.length) {
+      if (customers.data.length) {
         customer = customers.data[0];
         logs.customerRetrieved(customer.id, payload.email);
       } else {
@@ -78,14 +82,18 @@ export const sendInvoice = functions.database
             createdFrom: "Created by Firebase extension" // optional metadata, adds a note
           }
         });
+
         logs.customerCreated(customer.id);
       }
 
-      const invoice = await createInvoice(customer, payload.items);
+      const invoice: Stripe.Invoice = await createInvoice(
+        customer,
+        payload.items
+      );
 
       if (invoice.id) {
         // Stripe sends an email to the customer
-        const result = await stripe.invoices.sendInvoice(invoice.id);
+        const result: Stripe.Invoice = await stripe.invoices.sendInvoice(invoice.id);
         if (result.status === "open") {
           logs.invoiceSent(result.id, payload.email, result.hosted_invoice_url);
         }

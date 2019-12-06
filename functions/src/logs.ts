@@ -1,4 +1,4 @@
-import * as Stripe from "stripe";
+import Stripe from "stripe";
 
 export function start() {
   console.log("🙂 Received event, starting the process");
@@ -8,14 +8,14 @@ export function error(err: Error) {
   console.log("😞 Unhandled error occurred during processing:", err);
 }
 
-export function stripeError(err: Stripe.errors.StripeAPIError) {
+export function stripeError(err: Stripe.StripeCardError) {
   console.log(
     "😞 An error happened when making a request to the Stripe API:",
     err
   );
 }
 
-export function invoiceCreatedError(invoice: Stripe.invoices.IInvoice) {
+export function invoiceCreatedError(invoice: Stripe.Invoice) {
   console.log("😞 Error when creating the invoice:", invoice);
 }
 
