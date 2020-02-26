@@ -41,11 +41,11 @@ params:
 
   - param: DB_PATH
     type: string
-    label: Collection name
+    label: Collection
     default: invoices
     required: true
     description: >-
-      The collection name that
+      The DB path to the collection that the extension will be triggered from
 
   - param: STRIPE_SECRET_KEY
     type: string
