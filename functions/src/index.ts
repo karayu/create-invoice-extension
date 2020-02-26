@@ -2,7 +2,9 @@ import Stripe from "stripe";
 import * as functions from "firebase-functions";
 import * as logs from "./logs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2019-12-03"
+});
 
 interface InvoicePayload {
   email: string;
@@ -51,9 +53,8 @@ const createInvoice = async function(
 };
 
 // TODO: Use Firestore instead of realtime db and have it take collection name
-export const sendInvoice = functions.database
-  .ref("/invoices/{id}")
-  .onCreate(async snap => {
+export const sendInvoice = functions.handler.database.ref.onCreate(
+  async snap => {
     try {
       const payload = JSON.parse(snap.val()) as InvoicePayload;
 
@@ -63,11 +64,11 @@ export const sendInvoice = functions.database
       }
 
       logs.start();
-      
+
       // Check to see if we already have a Customer record in Stripe with email address
-      let customers: Stripe.ApiList<Stripe.Customer> = await stripe.customers.list(
-        { email: payload.email }
-      );
+      let customers: Stripe.ApiList<
+        Stripe.Customer
+      > = await stripe.customers.list({ email: payload.email });
       let customer: Stripe.Customer;
 
       if (customers.data.length) {
@@ -93,7 +94,9 @@ export const sendInvoice = functions.database
 
       if (invoice.id) {
         // Stripe sends an email to the customer
-        const result: Stripe.Invoice = await stripe.invoices.sendInvoice(invoice.id);
+        const result: Stripe.Invoice = await stripe.invoices.sendInvoice(
+          invoice.id
+        );
         if (result.status === "open") {
           logs.invoiceSent(result.id, payload.email, result.hosted_invoice_url);
         }
@@ -104,4 +107,5 @@ export const sendInvoice = functions.database
       logs.error(e);
     }
     return;
-  });
+  }
+);

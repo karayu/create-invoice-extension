@@ -1,16 +1,16 @@
 name: create-stripe-invoice
 version: 0.0.1
 specVersion: v1beta
-displayName: Create and send invoice
+displayName: Email an invoice to a customer
 
 resources:
-  - name: handleDBWrite
+  - name: sendInvoice
     type: firebaseextensions.v1beta.function
     properties:
       sourceDirectory: .
       location: ${LOCATION}
       eventTrigger:
-        eventType: providers/cloud.firestore/eventTypes/document.write
+        eventType: providers/cloud.firestore/eventTypes/document.create
         resource: projects/${PROJECT_ID}/databases/(default)/documents/${DB_PATH}/{id}
 
 params:
@@ -45,4 +45,12 @@ params:
     default: invoices
     required: true
     description: >-
-      The DB path
+      The collection name that
+
+  - param: STRIPE_SECRET_KEY
+    type: string
+    label: Stripe secret API key
+    default: sk_1234567890
+    required: true
+    description: >-
+      Your Stripe secret key that is used to send the invoice. Your Stripe API keys are at https://dashboard.stripe.com/apikeys

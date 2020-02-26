@@ -1,32 +1,35 @@
 
-This extension allows you to invoice customers from documents added to a Firestore collection. 
+An invoice is a document, associated with a sale, that a vendor provides a customer. It contains details about the exact goods or services in the sale and details on how the payment should be made. 
 
-The top-level fields required are `email` and `items`.
-`email` is the email address of the customer you want to send the invoice to.
-`items` is a list of items that will be itemized on the invoice. 
+Stripe allows you to email beautiful invoices that offer multiple ways to pay with a hosted payment form. You can customize the invoice to use the logo and color theme of your business. Once you send the invoice you can track the whether the customer has paid through the Stripe Dashboard.
 
-Stripe will calculate the total amount and generate a hosted invoice page that lets the customer pay with either cards or bank details.
-
-![An invoice page showing an itemized receipt, with options to pay with card or bank transfer](https://stripe.com/img/docs/billing/hosted-invoice-page.png)
+This extension sets up a Cloud Function that listens for Cloud Firestore events for a particular schema. The top-level required fields are `email` and `items`.
 
 ```
-admin.firestore().collection('invoices').add({
-  email: 'someone@example.com',
-  items: [{
+email: 'customer-email-address@example.com',
+items: [{
     amount: 1999,
     currency: 'usd',
     description: 'My super cool item'
-  },
-  {
-      amount: 540,
-      currency: 'usd',
-      description: 'Shipping cost'
-  }],
-})
+},
+{
+    amount: 540,
+    currency: 'usd',
+    description: 'Shipping cost'
+}]
 ```
+
+- `email` is the email address of your customer 
+- `items` is a list of items to be itemized on the invoice
+
+Stripe calculates the total amount and generates a hosted invoice page that allows the customer pay with either card or bank details. 
+
+![An invoice page showing an itemized receipt, with options to pay with card or bank transfer](https://stripe.com/img/docs/billing/hosted-invoice-page.png)
+
+That's it! Now your customer can pay you 💸.
 
 ## Pricing
 
-This extension uses [Stripe Billing](https://stripe.com/pricing#billing-pricing).
+This extension uses Cloud Firestore and Cloud Functions which may have associated charges depending on your plan.
 
-It also uses Cloud Firestore and Cloud Functions on Google Cloud Platform.
+It also uses [Stripe Billing](https://stripe.com/pricing#billing-pricing) to collect payments from your customers.
