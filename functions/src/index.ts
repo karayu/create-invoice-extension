@@ -10,6 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 admin.initializeApp();
 
+/* Creates a new invoice using Stripe */
 const createInvoice = async function(
   customer: Stripe.Customer,
   orderItems: Array<OrderItem>,
@@ -28,14 +29,13 @@ const createInvoice = async function(
       }
     );
 
-    // Create the individual invoice items for this customer
+    // Create the individual invoice items for this customer from the items in payload
     const items: Array<Stripe.InvoiceItem> = await Promise.all(itemPromises);
 
-    // Create an invoice
     const invoice: Stripe.Invoice = await stripe.invoices.create({
       customer: customer.id,
       collection_method: "send_invoice",
-      days_until_due: daysUntilDue, // TODO: Make this configurable with default of 7 days
+      days_until_due: daysUntilDue,
       auto_advance: true
     });
 
@@ -46,7 +46,7 @@ const createInvoice = async function(
   }
 };
 
-// TODO: Use Firestore instead of realtime db and have it take collection name
+/* Emails an invoice to a customer when a new document is created */
 export const sendInvoice = functions.handler.firestore.document.onCreate(
   async snap => {
     try {
@@ -72,7 +72,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         email = payload.email;
       }
 
-      // Check to see if we already have a Customer record in Stripe with email address
+      // Check to see if we already have a customer in Stripe with email address
       let customers: Stripe.ApiList<
         Stripe.Customer
       > = await stripe.customers.list({ email: payload.email });
@@ -83,7 +83,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         customer = customers.data[0];
         logs.customerRetrieved(customer.id, payload.email);
       } else {
-        // Create new Customer on Stripe with email
+        // Create new customer on Stripe with email
         customer = await stripe.customers.create({
           email,
           metadata: {
