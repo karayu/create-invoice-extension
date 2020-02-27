@@ -1,14 +1,16 @@
 # Test the extension 
 
-Thanks for installing the Stripe Invoicing extension! Get started by testing out the 
+Thanks for installing the Stripe Invoicing extension! Getting started is simple:
 
-1. Go to your [Firebase dashboard](console.firebase.google.com)
+1. [Sign up](https://dashboard.stripe.com/register) for a new Stripe account or [login in](https://dashboard.stripe.com/login) to an existing account.
 
-2. Create the collection you specified during installation when prompted for DB_PATH (default collection name is `invoices`)
+2. Go to your [Firebase dashboard.](console.firebase.google.com)
 
-3. Stripe has a test mode so you can safely test an API integration without being charged. Make sure you are using your Stripe test API key if you 
+3. Create the collection you specified during installation when prompted for DB_PATH (default collection name is `invoices`).
 
-4. Add a document to your collection to test the invoicing functionality. Use your email address so you can verify that the email was sent
+4. Stripe has a test mode so you can safely test payments without being charged. Find your testmode keys at [https://dashboard.stripe.com/test/apikeys](https://dashboard.stripe.com/test/apikeys).
+
+5. Add a document to your collection to test the invoicing functionality.
 
 ```
 email: 'your-email-address@example.com',
@@ -25,13 +27,13 @@ items: [{
 
 ```
 
-5. Look in your [Stripe dashboard](https://dashboard.stripe.com/test/invoices) for a record of the test invoice!
+6. Look in your [Stripe dashboard](https://dashboard.stripe.com/test/invoices) for a record of the test invoice! Stripe will not automatically send an email in test mode (but will send an email to your customer in live mode).
 
 # Deploy live 
 
 When you are ready to use the extension in production, be sure to: 
 
-1. Use your Stripe live mode API key (should look like sk_123456789 not sk_test_123456789).
+1. Use your Stripe [live mode API key](https://dashboard.stripe.com/apikeys) (should look like sk_123456789 not sk_test_123456789).
 
 2. Understand how Stripe prices invoices by reading about our [Billing pricing tier.](https://stripe.com/billing/pricing)
 

@@ -1,22 +1,34 @@
 import Stripe from "stripe";
+import { InvoicePayload } from "./interfaces";
 
 export function start() {
   console.log("🙂 Received event, starting the process");
 }
 
 export function error(err: Error) {
-  console.log("😞 Unhandled error occurred during processing:", err);
+  console.log("😞[Error] Unhandled error occurred during processing:", err);
+}
+
+export function missingPayload(payload: InvoicePayload) {
+  if (!payload.items.length) {
+    console.log("😞[Error] Missing at least one line item in items[]");
+  }
+  if (!payload.email && !payload.uid) {
+    console.log(
+      "😞[Error] Missing either a customer email address or Firebase Auth uid "
+    );
+  }
 }
 
 export function stripeError(err: Stripe.StripeCardError) {
   console.log(
-    "😞 An error happened when making a request to the Stripe API:",
+    "😞[Error] An error happened when making a request to the Stripe API:",
     err
   );
 }
 
 export function invoiceCreatedError(invoice: Stripe.Invoice) {
-  console.log("😞 Error when creating the invoice:", invoice);
+  console.log("😞[Error] Error when creating the invoice:", invoice);
 }
 
 export function customerCreated(id: string) {

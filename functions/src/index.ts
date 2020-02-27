@@ -1,25 +1,19 @@
 import Stripe from "stripe";
 import * as functions from "firebase-functions";
+import { InvoicePayload, OrderItem } from "./interfaces";
 import * as logs from "./logs";
 
+const admin = require("firebase-admin");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2019-12-03"
 });
 
-interface InvoicePayload {
-  email: string;
-  items: [OrderItem];
-}
-
-interface OrderItem {
-  amount: number;
-  currency: string;
-  description: string;
-}
+admin.initializeApp();
 
 const createInvoice = async function(
   customer: Stripe.Customer,
-  orderItems: Array<OrderItem>
+  orderItems: Array<OrderItem>,
+  daysUntilDue: number
 ) {
   try {
     // Create an invoice item for each item in the datastore JSON
@@ -41,7 +35,7 @@ const createInvoice = async function(
     const invoice: Stripe.Invoice = await stripe.invoices.create({
       customer: customer.id,
       collection_method: "send_invoice",
-      days_until_due: 7, // TODO: Make this configurable with default of 7 days
+      days_until_due: daysUntilDue, // TODO: Make this configurable with default of 7 days
       auto_advance: true
     });
 
@@ -53,17 +47,30 @@ const createInvoice = async function(
 };
 
 // TODO: Use Firestore instead of realtime db and have it take collection name
-export const sendInvoice = functions.handler.database.ref.onCreate(
+export const sendInvoice = functions.handler.firestore.document.onCreate(
   async snap => {
     try {
-      const payload = JSON.parse(snap.val()) as InvoicePayload;
+      const payload = snap.data() as InvoicePayload;
+      const daysUntilDue =
+        payload.daysUntilDue || Number(process.env.DAYS_UNTIL_DUE_DEFAULT);
 
-      if (!payload.email || !payload.items.length) {
-        console.log("Malformed payload", payload);
+      if (!(payload.email || payload.uid) || !payload.items.length) {
+        logs.missingPayload(payload);
         return;
       }
 
       logs.start();
+
+      let email;
+
+      if (payload.uid) {
+        // Look up the Firebase Auth UserRecord to get the email
+        const user = await admin.auth().getUser(payload.uid);
+        email = user.email;
+      } else {
+        // Use the email provided in the payload
+        email = payload.email;
+      }
 
       // Check to see if we already have a Customer record in Stripe with email address
       let customers: Stripe.ApiList<
@@ -72,15 +79,15 @@ export const sendInvoice = functions.handler.database.ref.onCreate(
       let customer: Stripe.Customer;
 
       if (customers.data.length) {
+        // Use the existing customer
         customer = customers.data[0];
         logs.customerRetrieved(customer.id, payload.email);
       } else {
         // Create new Customer on Stripe with email
-        // TODO: Allow more customization of Customer information (e.g. name)
         customer = await stripe.customers.create({
-          email: payload.email,
+          email,
           metadata: {
-            createdFrom: "Created by Firebase extension" // optional metadata, adds a note
+            createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
           }
         });
 
@@ -89,16 +96,20 @@ export const sendInvoice = functions.handler.database.ref.onCreate(
 
       const invoice: Stripe.Invoice = await createInvoice(
         customer,
-        payload.items
+        payload.items,
+        daysUntilDue
       );
 
       if (invoice.id) {
-        // Stripe sends an email to the customer
+        // Email the invoice to the customer
         const result: Stripe.Invoice = await stripe.invoices.sendInvoice(
           invoice.id
         );
         if (result.status === "open") {
+          // Successfully emailed the invoice
           logs.invoiceSent(result.id, payload.email, result.hosted_invoice_url);
+        } else {
+          logs.invoiceCreatedError(result);
         }
       } else {
         logs.invoiceCreatedError(invoice);

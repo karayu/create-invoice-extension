@@ -54,3 +54,11 @@ params:
     required: true
     description: >-
       Your Stripe secret key that is used to send the invoice. Your Stripe API keys are at https://dashboard.stripe.com/apikeys
+  
+  - param: DAYS_UNTIL_DUE_DEFAULT
+    type: string
+    label: Days until payment is due
+    default: 7
+    required: true
+    description: >-
+      The number of days the customer has to pay the invoice before it's closed. You can override this default value for each invoice. 
