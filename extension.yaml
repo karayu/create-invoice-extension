@@ -15,7 +15,7 @@ resources:
 
 roles:
   - role: firebaseauth.viewer
-    reason: Allows the extension to read data from Auth.
+    reason: Allows the extension to read user data from Auth.
 
 params:
   - param: LOCATION
@@ -49,7 +49,7 @@ params:
     default: invoices
     required: true
     description: >-
-      The DB path to the collection that the extension will be triggered from
+      The DB path to the Firestore collection.
 
   - param: STRIPE_SECRET_KEY
     type: string
@@ -57,7 +57,7 @@ params:
     default: sk_1234567890
     required: true
     description: >-
-      Your Stripe secret key that is used to send the invoice. Your Stripe API keys are at https://dashboard.stripe.com/apikeys
+      Your Stripe secret API key that is used to send the invoice. You can find your API keys in your [Stripe dashboard.](https://dashboard.stripe.com/apikeys)
   
   - param: DAYS_UNTIL_DUE_DEFAULT
     type: string
@@ -65,4 +65,4 @@ params:
     default: 7
     required: true
     description: >-
-      The number of days the customer has to pay the invoice before it's closed. You can override this default value for each invoice. 
+      The number of days the customer has to pay the invoice before it's closed. You can later override this default value for each invoice. 
