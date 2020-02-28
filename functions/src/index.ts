@@ -107,7 +107,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         );
         if (result.status === "open") {
           // Successfully emailed the invoice
-          logs.invoiceSent(result.id, payload.email, result.hosted_invoice_url);
+          logs.invoiceSent(result.id, email, result.hosted_invoice_url);
         } else {
           logs.invoiceCreatedError(result);
         }

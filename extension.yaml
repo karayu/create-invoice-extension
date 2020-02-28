@@ -13,6 +13,10 @@ resources:
         eventType: providers/cloud.firestore/eventTypes/document.create
         resource: projects/${PROJECT_ID}/databases/(default)/documents/${DB_PATH}/{id}
 
+roles:
+  - role: firebaseauth.viewer
+    reason: Allows the extension to read data from Auth.
+
 params:
   - param: LOCATION
     type: select

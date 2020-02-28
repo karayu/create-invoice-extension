@@ -18,6 +18,7 @@ const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2019-12-03"
 });
 admin.initializeApp();
+/* Creates a new invoice using Stripe */
 const createInvoice = async function (customer, orderItems, daysUntilDue) {
     try {
         // Create an invoice item for each item in the datastore JSON
@@ -29,9 +30,8 @@ const createInvoice = async function (customer, orderItems, daysUntilDue) {
                 description: item.description
             });
         });
-        // Create the individual invoice items for this customer
+        // Create the individual invoice items for this customer from the items in payload
         const items = await Promise.all(itemPromises);
-        // Create an invoice
         const invoice = await stripe.invoices.create({
             customer: customer.id,
             collection_method: "send_invoice",
@@ -45,7 +45,7 @@ const createInvoice = async function (customer, orderItems, daysUntilDue) {
         return null;
     }
 };
-// TODO: Use Firestore instead of realtime db and have it take collection name
+/* Emails an invoice to a customer when a new document is created */
 exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap) => {
     try {
         const payload = snap.data();
@@ -65,7 +65,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap)
             // Use the email provided in the payload
             email = payload.email;
         }
-        // Check to see if we already have a Customer record in Stripe with email address
+        // Check to see if we already have a customer in Stripe with email address
         let customers = await stripe.customers.list({ email: payload.email });
         let customer;
         if (customers.data.length) {
@@ -74,7 +74,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap)
             logs.customerRetrieved(customer.id, payload.email);
         }
         else {
-            // Create new Customer on Stripe with email
+            // Create new customer on Stripe with email
             customer = await stripe.customers.create({
                 email,
                 metadata: {
