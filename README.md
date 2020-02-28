@@ -1,30 +1,28 @@
-This extension allows you to invoice customers from documents added to a Firestore collection.
+# Send an invoice with Stripe
 
-The top-level fields required are `email` and `items`.
-`email` is the email address of the customer you want to send the invoice to.
-`items` is a list of items that will be itemized on the invoice.
+An invoice is a document, associated with a sale, that a vendor provides a customer. It contains details about the exact goods or services in the sale and details on how the payment should be made.
 
-Stripe will calculate the total amount and generate a hosted invoice page that lets the customer pay with either cards or bank details.
+[Stripe](https://stripe.com/) is a payments platform that lets you send hosted invoices to your customers. You can customize the invoice to use the logo and color theme of your business. Once you send the invoice, use the Stripe dashboard to track the whether the customer has paid and how much money you processed with detailed reporting and charts.
+
+This extension requires a Stripe account ([sign up](http://dashboard.stripe.com/register) today!) and a previously configured Firestore collection. Upon installation, the extension sets up a Cloud Function that is triggered when you add a document to the Firestore collection. For example this document:
 
 ```
-admin.firestore().collection('invoices').add({
-  email: 'adreyfus@stripe.com',
-  items: [{
-    amount: 1299,
+email: 'jenny-rosen@example.com',
+items: [{
+    amount: 2000,
     currency: 'usd',
-    description: 'Three apples'
-  }],
-})
+    description: 'Growth plan'
+}]
 ```
 
-This document will generate the payment page below and automatically send an email to adreyfus@stripe.com with details on how to pay.
+will send an invoice to jenny-rosen@example that looks like:
 
-![An invoice page showing an itemized receipt, with options to pay with card or bank transfer](./test-invoice.png)
+![An invoice page showing an itemized receipt, with options to pay with card or bank transfer](https://stripe.com/img/docs/billing/hosted-invoice-page.png)
 
-You can see this test invoice live at https://pay.stripe.com/invoice/invst_QtLCaOZqu2P8ZceuvsJIF6xpHC
+That's it, now you have a way to easily collect payments 💸!
 
 ## Pricing
 
-This extension uses [Stripe Billing](https://stripe.com/pricing#billing-pricing).
+This extension uses Cloud Firestore and Cloud Functions which may have associated charges depending on your plan. It also allows you to optionally use Firebase Auth to manage email and customer data.
 
-It also uses Cloud Firestore and Cloud Functions on Google Cloud Platform.
+It also uses [Stripe Billing](https://stripe.com/pricing#billing-pricing) to collect payments from your customers and send invoices. You are responsible for any associated costs with your usage of Stripe.
