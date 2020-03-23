@@ -104,7 +104,8 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         // Write the Stripe Invoice ID back to the document in Firestore
         // so that we can find it in the webhook
         await snap.ref.update({
-          stripeInvoiceId: invoice.id
+          stripeInvoiceId: invoice.id,
+          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
         });
 
         // Email the invoice to the customer
@@ -137,6 +138,7 @@ const relevantInvoiceEvents = new Set([
   "invoice.marked_uncollectible"
 ]);
 
+/* A Stripe webhook that updates invoices in Firestore */
 export const updateInvoice = functions.handler.https.onRequest(
   async (req, resp) => {
     const event: Stripe.Event = req.body as Stripe.Event;
@@ -156,12 +158,10 @@ export const updateInvoice = functions.handler.https.onRequest(
         `Ignoring event "${eventType}" because it isn't a relevant part of the invoice lifecycle`
       );
 
-      // Return a response to acknowledge receipt of the event
+      // Return a response to Stripe acknowledge receipt of the event
       resp.json({ received: true });
       return;
     }
-
-    console.log(`Recording event ${eventType}`);
 
     let invoicesInFirestore = await admin
       .firestore()
@@ -176,13 +176,24 @@ export const updateInvoice = functions.handler.https.onRequest(
       );
     }
 
+    // Keep a special status for payment_failed
+    // because otherwise the invoice would still be marked "open"
+    const invoiceStatus =
+      eventType === "invoice.payment_failed"
+        ? "payment_failed"
+        : invoice.status;
+
     const doc = invoicesInFirestore.docs[0];
     await doc.ref.update({
-      stripeInvoiceStatus: eventType
+      stripeInvoiceStatus: invoiceStatus,
+      lastStripeEvent: eventType
     });
 
-    console.log(`Updated invoice "${invoice.id}" to status "${eventType}"`);
-    // Return a response to acknowledge receipt of the event
+    console.log(
+      `Updated invoice "${invoice.id}" to status "${invoiceStatus}" on event type "${eventType}"`
+    );
+
+    // Return a response to Stripe to acknowledge receipt of the event
     resp.json({ received: true });
   }
 );
