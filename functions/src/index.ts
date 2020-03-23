@@ -140,8 +140,24 @@ const relevantInvoiceEvents = new Set([
 
 /* A Stripe webhook that updates invoices in Firestore */
 export const updateInvoice = functions.handler.https.onRequest(
-  async (req, resp) => {
-    const event: Stripe.Event = req.body as Stripe.Event;
+  async (req: functions.https.Request, resp) => {
+    let event: Stripe.Event;
+
+    // Instead of getting the `Stripe.Event`
+    // object directly from `req.body`,
+    // use the Stripe webhooks API to make sure
+    // this webhook call came from a trusted source
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        req.headers["stripe-signature"],
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.log(`⚠️ Webhook signature verification failed.`);
+      resp.sendStatus(400);
+      return;
+    }
 
     let invoice: Stripe.Invoice;
     let eventType: string;
