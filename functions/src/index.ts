@@ -139,25 +139,29 @@ const relevantInvoiceEvents = new Set([
 
 export const updateInvoice = functions.handler.https.onRequest(
   async (req, resp) => {
+    const event: Stripe.Event = req.body as Stripe.Event;
+
     let invoice: Stripe.Invoice;
-    let event;
+    let eventType: string;
 
     try {
-      invoice = req.body.data.object as Stripe.Invoice;
-      event = req.body.type;
+      invoice = event.data.object as Stripe.Invoice;
+      eventType = event.type;
     } catch (err) {
       resp.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    if (!relevantInvoiceEvents.has(event)) {
+    if (!relevantInvoiceEvents.has(eventType)) {
       console.log(
-        `Ignoring event "${event}" because it isn't a relevant part of the invoice lifecycle`
+        `Ignoring event "${eventType}" because it isn't a relevant part of the invoice lifecycle`
       );
 
       // Return a response to acknowledge receipt of the event
       resp.json({ received: true });
       return;
     }
+
+    console.log(`Recording event ${eventType}`);
 
     let invoicesInFirestore = await admin
       .firestore()
@@ -174,10 +178,10 @@ export const updateInvoice = functions.handler.https.onRequest(
 
     const doc = invoicesInFirestore.docs[0];
     await doc.ref.update({
-      stripeInvoiceStatus: event
+      stripeInvoiceStatus: eventType
     });
 
-    console.log(`Updated invoice "${invoice.id}" to status "${event}"`);
+    console.log(`Updated invoice "${invoice.id}" to status "${eventType}"`);
     // Return a response to acknowledge receipt of the event
     resp.json({ received: true });
   }
