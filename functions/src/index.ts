@@ -151,7 +151,7 @@ export const updateInvoice = functions.handler.https.onRequest(
       event = stripe.webhooks.constructEvent(
         req.rawBody,
         req.headers["stripe-signature"],
-        process.env.STRIPE_WEBHOOK_SECRET
+        process.env.STRIPE_ENDPOINT_SECRET
       );
     } catch (err) {
       console.log(`⚠️ Webhook signature verification failed.`);
