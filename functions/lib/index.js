@@ -1,7 +1,4 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -9,11 +6,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const stripe_1 = __importDefault(require("stripe"));
-const functions = __importStar(require("firebase-functions"));
-const logs = __importStar(require("./logs"));
 const admin = __importStar(require("firebase-admin"));
+const functions = __importStar(require("firebase-functions"));
+const stripe_1 = __importDefault(require("stripe"));
+const logs = __importStar(require("./logs"));
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2019-12-03"
 });
@@ -88,7 +88,8 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap)
             // Write the Stripe Invoice ID back to the document in Firestore
             // so that we can find it in the webhook
             await snap.ref.update({
-                stripeInvoiceId: invoice.id
+                stripeInvoiceId: invoice.id,
+                stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
             });
             // Email the invoice to the customer
             const result = await stripe.invoices.sendInvoice(invoice.id);
@@ -109,39 +110,42 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap)
     }
     return;
 });
-// call this function to easily
-exports.dummyData = functions.handler.https.onRequest(async (req, resp) => {
-    const db = admin.firestore();
-    db.collection(process.env.DB_PATH).add({
-        email: "test@tester.com",
-        items: [
-            {
-                amount: 2000,
-                currency: "usd",
-                description: "Growth plan"
-            }
-        ]
-    });
-});
 const relevantInvoiceEvents = new Set([
     "invoice.created",
     "invoice.finalized",
     "invoice.payment_failed",
-    "invoice.payment_succeeded"
+    "invoice.payment_succeeded",
+    "invoice.payment_action_required",
+    "invoice.voided",
+    "invoice.marked_uncollectible"
 ]);
+/* A Stripe webhook that updates invoices in Firestore */
 exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
-    let invoice;
     let event;
+    // Instead of getting the `Stripe.Event`
+    // object directly from `req.body`,
+    // use the Stripe webhooks API to make sure
+    // this webhook call came from a trusted source
     try {
-        invoice = req.body.data.object;
-        event = req.body.type;
+        event = stripe.webhooks.constructEvent(req.rawBody, req.headers["stripe-signature"], process.env.STRIPE_ENDPOINT_SECRET);
+    }
+    catch (err) {
+        console.log(`⚠️ Webhook signature verification failed.`);
+        resp.sendStatus(400);
+        return;
+    }
+    let invoice;
+    let eventType;
+    try {
+        invoice = event.data.object;
+        eventType = event.type;
     }
     catch (err) {
         resp.status(400).send(`Webhook Error: ${err.message}`);
     }
-    if (!relevantInvoiceEvents.has(event)) {
-        console.log(`Ignoring event "${event}" because it isn't a relevant part of the invoice lifecycle`);
-        // Return a response to acknowledge receipt of the event
+    if (!relevantInvoiceEvents.has(eventType)) {
+        console.log(`Ignoring event "${eventType}" because it isn't a relevant part of the invoice lifecycle`);
+        // Return a response to Stripe acknowledge receipt of the event
         resp.json({ received: true });
         return;
     }
@@ -151,38 +155,21 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
         .where("stripeInvoiceId", "==", invoice.id)
         .get();
     // If we don't have exactly 1 invoice, something went wrong
-    if (invoicesInFirestore.size === 0) {
-        // throw new Error(`Could not find invoiceId "${invoice.id}"`);
-        /// TEMPORARY
-        await admin
-            .firestore()
-            .collection(process.env.DB_PATH)
-            .add({
-            stripeInvoiceId: invoice.id,
-            email: "test@tester.com",
-            items: [
-                {
-                    amount: 2000,
-                    currency: "usd",
-                    description: "Growth plan"
-                }
-            ]
-        });
-        invoicesInFirestore = await admin
-            .firestore()
-            .collection(process.env.DB_PATH)
-            .where("stripeInvoiceId", "==", invoice.id)
-            .get();
-        ///
+    if (invoicesInFirestore.size !== 1) {
+        throw new Error(`Expected 1 document with invoiceId "${invoice.id}", but found ${invoicesInFirestore.size}.`);
     }
-    else if (invoicesInFirestore.size > 1) {
-        throw new Error(`Found multiple items matching invoiceId "${invoice.id}"`);
-    }
+    // Keep a special status for payment_failed
+    // because otherwise the invoice would still be marked "open"
+    const invoiceStatus = eventType === "invoice.payment_failed"
+        ? "payment_failed"
+        : invoice.status;
     const doc = invoicesInFirestore.docs[0];
     await doc.ref.update({
-        stripeInvoiceStatus: event
+        stripeInvoiceStatus: invoiceStatus,
+        lastStripeEvent: eventType
     });
-    console.log(`Updated invoice "${invoice.id}" to status "${event}"`);
+    console.log(`Updated invoice "${invoice.id}" to status "${invoiceStatus}" on event type "${eventType}"`);
+    // Return a response to Stripe to acknowledge receipt of the event
     resp.json({ received: true });
 });
 //# sourceMappingURL=index.js.map
