@@ -74,12 +74,12 @@ params:
     type: string
     label: Stripe webhook secret
     default: whsec_1234567890
-    required: true
+    required: false
     description: >-
       If you are testing your webhook locally with the Stripe CLI you can find
-      the endpoint's secret by running `stripe listen`. Otherwise, find your
-      endpoint's secret in your webhook settings in the [Stripe Developer
-      Dashboard](https://dashboard.stripe.com/webhooks)
+      the endpoint's secret by running `stripe listen`. Otherwise, you'll need
+      to leave this blank for now. Once you finish installing your extension,
+      follow the postinstall instructions for configuring your webhook.
 
   - param: DAYS_UNTIL_DUE_DEFAULT
     type: string
