@@ -22,7 +22,10 @@ resources:
 roles:
   - role: firebaseauth.viewer
     reason: Allows the extension to read user data from Auth.
-
+  - role: datastore.user
+    reason:
+      Allows the extension's webhook to update invoices in Firestore when called
+      by Stripe.
 params:
   - param: LOCATION
     type: select
@@ -73,9 +76,10 @@ params:
     default: whsec_1234567890
     required: true
     description: >-
-      If you are testing your webhook locally with the Stripe CLI you can find 
-      the endpoint's secret by running `stripe listen`. Otherwise, find your 
-      endpoint's secret in your webhook settings in the [Stripe Developer Dashboard](https://dashboard.stripe.com/webhooks)
+      If you are testing your webhook locally with the Stripe CLI you can find
+      the endpoint's secret by running `stripe listen`. Otherwise, find your
+      endpoint's secret in your webhook settings in the [Stripe Developer
+      Dashboard](https://dashboard.stripe.com/webhooks)
 
   - param: DAYS_UNTIL_DUE_DEFAULT
     type: string
