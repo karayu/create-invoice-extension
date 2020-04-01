@@ -22,5 +22,9 @@
     "tslint": "^5.8.0",
     "typescript": "^3.4.0"
   },
+  "prettier": {
+    "singleQuote": false,
+    "printWidth": 80
+  },
   "private": true
 }
