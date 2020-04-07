@@ -28,7 +28,7 @@ const createInvoice = async function(
             currency: item.currency,
             description: item.description
           },
-          { idempotencyKey }
+          { idempotencyKey: `invoiceItems-create-${idempotencyKey}` }
         );
       }
     );
@@ -43,7 +43,7 @@ const createInvoice = async function(
         days_until_due: daysUntilDue,
         auto_advance: true
       },
-      { idempotencyKey }
+      { idempotencyKey: `invoices-create-${idempotencyKey}` }
     );
 
     return invoice;
@@ -105,7 +105,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
               createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
             }
           },
-          { idempotencyKey: eventId }
+          { idempotencyKey: `customers-create-${eventId}` }
         );
 
         logs.customerCreated(customer.id);
@@ -129,7 +129,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         // Email the invoice to the customer
         const result: Stripe.Invoice = await stripe.invoices.sendInvoice(
           invoice.id,
-          { idempotencyKey: eventId }
+          { idempotencyKey: `invoices-sendInvoice-${eventId}` }
         );
         if (result.status === "open") {
           // Successfully emailed the invoice

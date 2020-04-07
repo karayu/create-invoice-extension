@@ -28,7 +28,7 @@ const createInvoice = async function (customer, orderItems, daysUntilDue, idempo
                 amount: item.amount,
                 currency: item.currency,
                 description: item.description
-            }, { idempotencyKey });
+            }, { idempotencyKey: `invoiceItems-create-${idempotencyKey}` });
         });
         // Create the individual invoice items for this customer from the items in payload
         const items = await Promise.all(itemPromises);
@@ -37,7 +37,7 @@ const createInvoice = async function (customer, orderItems, daysUntilDue, idempo
             collection_method: "send_invoice",
             days_until_due: daysUntilDue,
             auto_advance: true
-        }, { idempotencyKey });
+        }, { idempotencyKey: `invoices-create-${idempotencyKey}` });
         return invoice;
     }
     catch (e) {
@@ -86,7 +86,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
                 metadata: {
                     createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
                 }
-            }, { idempotencyKey: eventId });
+            }, { idempotencyKey: `customers-create-${eventId}` });
             logs.customerCreated(customer.id);
         }
         const invoice = await createInvoice(customer, payload.items, daysUntilDue, eventId);
@@ -98,7 +98,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
                 stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
             });
             // Email the invoice to the customer
-            const result = await stripe.invoices.sendInvoice(invoice.id, { idempotencyKey: eventId });
+            const result = await stripe.invoices.sendInvoice(invoice.id, { idempotencyKey: `invoices-sendInvoice-${eventId}` });
             if (result.status === "open") {
                 // Successfully emailed the invoice
                 logs.invoiceSent(result.id, email, result.hosted_invoice_url);
