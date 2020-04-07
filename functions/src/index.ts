@@ -14,30 +14,37 @@ admin.initializeApp();
 const createInvoice = async function(
   customer: Stripe.Customer,
   orderItems: Array<OrderItem>,
-  daysUntilDue: number
+  daysUntilDue: number,
+  idempotencyKey: string
 ) {
   try {
     // Create an invoice item for each item in the datastore JSON
     const itemPromises: Array<Promise<Stripe.InvoiceItem>> = orderItems.map(
       item => {
-        return stripe.invoiceItems.create({
-          customer: customer.id,
-          amount: item.amount,
-          currency: item.currency,
-          description: item.description
-        });
+        return stripe.invoiceItems.create(
+          {
+            customer: customer.id,
+            amount: item.amount,
+            currency: item.currency,
+            description: item.description
+          },
+          { idempotencyKey }
+        );
       }
     );
 
     // Create the individual invoice items for this customer from the items in payload
     const items: Array<Stripe.InvoiceItem> = await Promise.all(itemPromises);
 
-    const invoice: Stripe.Invoice = await stripe.invoices.create({
-      customer: customer.id,
-      collection_method: "send_invoice",
-      days_until_due: daysUntilDue,
-      auto_advance: true
-    });
+    const invoice: Stripe.Invoice = await stripe.invoices.create(
+      {
+        customer: customer.id,
+        collection_method: "send_invoice",
+        days_until_due: daysUntilDue,
+        auto_advance: true
+      },
+      { idempotencyKey }
+    );
 
     return invoice;
   } catch (e) {
@@ -48,7 +55,7 @@ const createInvoice = async function(
 
 /* Emails an invoice to a customer when a new document is created */
 export const sendInvoice = functions.handler.firestore.document.onCreate(
-  async snap => {
+  async (snap, context) => {
     try {
       const payload = snap.data() as InvoicePayload;
       const daysUntilDue =
@@ -58,6 +65,13 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         logs.missingPayload(payload);
         return;
       }
+
+      // Background functions fire "at least once"
+      // https://firebase.google.com/docs/functions/locations#background_functions
+      //
+      // This event id will be the same for the same Firestore write
+      // Use this as an idempotency key when calling the Stripe API
+      const eventId = context.eventId;
 
       logs.start();
 
@@ -84,12 +98,15 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         logs.customerRetrieved(customer.id, payload.email);
       } else {
         // Create new customer on Stripe with email
-        customer = await stripe.customers.create({
-          email,
-          metadata: {
-            createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
-          }
-        });
+        customer = await stripe.customers.create(
+          {
+            email,
+            metadata: {
+              createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
+            }
+          },
+          { idempotencyKey: eventId }
+        );
 
         logs.customerCreated(customer.id);
       }
@@ -97,7 +114,8 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
       const invoice: Stripe.Invoice = await createInvoice(
         customer,
         payload.items,
-        daysUntilDue
+        daysUntilDue,
+        eventId
       );
 
       if (invoice.id) {
@@ -110,7 +128,8 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
 
         // Email the invoice to the customer
         const result: Stripe.Invoice = await stripe.invoices.sendInvoice(
-          invoice.id
+          invoice.id,
+          { idempotencyKey: eventId }
         );
         if (result.status === "open") {
           // Successfully emailed the invoice
