@@ -5,13 +5,13 @@ import { InvoicePayload, OrderItem } from "./interfaces";
 import * as logs from "./logs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2019-12-03",
+  apiVersion: "2019-12-03"
 });
 
 admin.initializeApp();
 
 /* Creates a new invoice using Stripe */
-const createInvoice = async function (
+const createInvoice = async function(
   customer: Stripe.Customer,
   orderItems: Array<OrderItem>,
   daysUntilDue: number,
@@ -20,13 +20,13 @@ const createInvoice = async function (
   try {
     // Create an invoice item for each item in the datastore JSON
     const itemPromises: Array<Promise<Stripe.InvoiceItem>> = orderItems.map(
-      (item) => {
+      item => {
         return stripe.invoiceItems.create(
           {
             customer: customer.id,
             amount: item.amount,
             currency: item.currency,
-            description: item.description,
+            description: item.description
           },
           { idempotencyKey: `invoiceItems-create-${idempotencyKey}` }
         );
@@ -41,7 +41,7 @@ const createInvoice = async function (
         customer: customer.id,
         collection_method: "send_invoice",
         days_until_due: daysUntilDue,
-        auto_advance: true,
+        auto_advance: true
       },
       { idempotencyKey: `invoices-create-${idempotencyKey}` }
     );
@@ -102,8 +102,8 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
           {
             email,
             metadata: {
-              createdBy: "Created by Stripe Firebase extension", // optional metadata, adds a note
-            },
+              createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
+            }
           },
           { idempotencyKey: `customers-create-${eventId}` }
         );
@@ -123,7 +123,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         // so that we can find it in the webhook
         await snap.ref.update({
           stripeInvoiceId: invoice.id,
-          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`,
+          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
         });
 
         // Email the invoice to the customer
@@ -154,7 +154,7 @@ const relevantInvoiceEvents = new Set([
   "invoice.payment_succeeded",
   "invoice.payment_action_required",
   "invoice.voided",
-  "invoice.marked_uncollectible",
+  "invoice.marked_uncollectible"
 ]);
 
 /* A Stripe webhook that updates invoices in Firestore */
@@ -224,7 +224,7 @@ export const updateInvoice = functions.handler.https.onRequest(
     const doc = invoicesInFirestore.docs[0];
     await doc.ref.update({
       stripeInvoiceStatus: invoiceStatus,
-      lastStripeEvent: eventType,
+      lastStripeEvent: eventType
     });
 
     logs.statusUpdateComplete(invoice.id, invoiceStatus, eventType);
