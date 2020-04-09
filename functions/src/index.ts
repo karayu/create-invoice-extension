@@ -95,7 +95,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
       if (customers.data.length) {
         // Use the existing customer
         customer = customers.data[0];
-        logs.customerRetrieved(customer.id, payload.email);
+        logs.customerRetrieved(customer.id);
       } else {
         // Create new customer on Stripe with email
         customer = await stripe.customers.create(

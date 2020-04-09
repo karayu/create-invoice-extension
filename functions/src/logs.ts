@@ -48,9 +48,9 @@ export function customerCreated(id: string) {
   );
 }
 
-export function customerRetrieved(id: string, email: string) {
+export function customerRetrieved(id: string) {
   console.log(
-    `🙋 Found existing customer with email ${email}: https://dashboard.stripe.com/test/customers/${id}`
+    `🙋 Found existing customer by email: https://dashboard.stripe.com/test/customers/${id}`
   );
 }
 
