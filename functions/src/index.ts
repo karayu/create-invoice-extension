@@ -5,13 +5,13 @@ import { InvoicePayload, OrderItem } from "./interfaces";
 import * as logs from "./logs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2019-12-03"
+  apiVersion: "2019-12-03",
 });
 
 admin.initializeApp();
 
 /* Creates a new invoice using Stripe */
-const createInvoice = async function(
+const createInvoice = async function (
   customer: Stripe.Customer,
   orderItems: Array<OrderItem>,
   daysUntilDue: number,
@@ -20,13 +20,13 @@ const createInvoice = async function(
   try {
     // Create an invoice item for each item in the datastore JSON
     const itemPromises: Array<Promise<Stripe.InvoiceItem>> = orderItems.map(
-      item => {
+      (item) => {
         return stripe.invoiceItems.create(
           {
             customer: customer.id,
             amount: item.amount,
             currency: item.currency,
-            description: item.description
+            description: item.description,
           },
           { idempotencyKey: `invoiceItems-create-${idempotencyKey}` }
         );
@@ -41,7 +41,7 @@ const createInvoice = async function(
         customer: customer.id,
         collection_method: "send_invoice",
         days_until_due: daysUntilDue,
-        auto_advance: true
+        auto_advance: true,
       },
       { idempotencyKey: `invoices-create-${idempotencyKey}` }
     );
@@ -73,7 +73,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
       // Use this as an idempotency key when calling the Stripe API
       const eventId = context.eventId;
 
-      logs.start();
+      logs.startInvoiceCreate();
 
       let email;
 
@@ -102,8 +102,8 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
           {
             email,
             metadata: {
-              createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
-            }
+              createdBy: "Created by Stripe Firebase extension", // optional metadata, adds a note
+            },
           },
           { idempotencyKey: `customers-create-${eventId}` }
         );
@@ -123,7 +123,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         // so that we can find it in the webhook
         await snap.ref.update({
           stripeInvoiceId: invoice.id,
-          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
+          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`,
         });
 
         // Email the invoice to the customer
@@ -154,7 +154,7 @@ const relevantInvoiceEvents = new Set([
   "invoice.payment_succeeded",
   "invoice.payment_action_required",
   "invoice.voided",
-  "invoice.marked_uncollectible"
+  "invoice.marked_uncollectible",
 ]);
 
 /* A Stripe webhook that updates invoices in Firestore */
@@ -173,8 +173,8 @@ export const updateInvoice = functions.handler.https.onRequest(
         process.env.STRIPE_ENDPOINT_SECRET
       );
     } catch (err) {
-      console.log(`⚠️ Webhook signature verification failed.`);
-      resp.sendStatus(400);
+      logs.badSignature(err);
+      resp.status(401).send("Webhook Error: Invalid Secret");
       return;
     }
 
@@ -185,18 +185,20 @@ export const updateInvoice = functions.handler.https.onRequest(
       invoice = event.data.object as Stripe.Invoice;
       eventType = event.type;
     } catch (err) {
+      logs.malformedEvent(event);
       resp.status(400).send(`Webhook Error: ${err.message}`);
+      return;
     }
 
     if (!relevantInvoiceEvents.has(eventType)) {
-      console.log(
-        `Ignoring event "${eventType}" because it isn't a relevant part of the invoice lifecycle`
-      );
+      logs.ignoreEvent(eventType);
 
       // Return a response to Stripe acknowledge receipt of the event
       resp.json({ received: true });
       return;
     }
+
+    logs.startInvoiceUpdate(eventType);
 
     let invoicesInFirestore = await admin
       .firestore()
@@ -206,9 +208,10 @@ export const updateInvoice = functions.handler.https.onRequest(
 
     // If we don't have exactly 1 invoice, something went wrong
     if (invoicesInFirestore.size !== 1) {
-      throw new Error(
-        `Expected 1 document with invoiceId "${invoice.id}", but found ${invoicesInFirestore.size}.`
-      );
+      logs.unexpectedInvoiceAmount(invoicesInFirestore.size, invoice.id);
+
+      resp.status(500).send(`Invoice not found.`);
+      return;
     }
 
     // Keep a special status for payment_failed
@@ -221,12 +224,10 @@ export const updateInvoice = functions.handler.https.onRequest(
     const doc = invoicesInFirestore.docs[0];
     await doc.ref.update({
       stripeInvoiceStatus: invoiceStatus,
-      lastStripeEvent: eventType
+      lastStripeEvent: eventType,
     });
 
-    console.log(
-      `Updated invoice "${invoice.id}" to status "${invoiceStatus}" on event type "${eventType}"`
-    );
+    logs.statusUpdateComplete(invoice.id, invoiceStatus, eventType);
 
     // Return a response to Stripe to acknowledge receipt of the event
     resp.json({ received: true });
