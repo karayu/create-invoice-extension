@@ -6,29 +6,29 @@ export function start() {
 }
 
 export function error(err: Error) {
-  console.log("😞[Error] Unhandled error occurred during processing:", err);
+  console.error("😞[Error] Unhandled error occurred during processing:", err);
 }
 
 export function missingPayload(payload: InvoicePayload) {
   if (!payload.items.length) {
-    console.log("😞[Error] Missing at least one line item in items[]");
+    console.error("😞[Error] Missing at least one line item in items[]");
   }
   if (!payload.email && !payload.uid) {
-    console.log(
+    console.error(
       "😞[Error] Missing either a customer email address or Firebase Auth uid "
     );
   }
 }
 
 export function stripeError(err: Stripe.StripeCardError) {
-  console.log(
+  console.error(
     "😞[Error] An error happened when making a request to the Stripe API:",
     err
   );
 }
 
 export function invoiceCreatedError(invoice: Stripe.Invoice) {
-  console.log("😞[Error] Error when creating the invoice:", invoice);
+  console.error("😞[Error] Error when creating the invoice:", invoice);
 }
 
 export function customerCreated(id: string) {
