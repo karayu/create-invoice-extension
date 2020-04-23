@@ -1,10 +1,10 @@
 {
-  "name": "functions",
-  "description": "Cloud Functions for Firebase",
-  "main": "functions/lib/index.js",
+  "name": "firestore-invoice-stripe",
+  "description": "Collect payments from your customers by emailing invoices",
+  "main": "lib/index.js",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
-    "clean": "rimraf functions/lib",
+    "clean": "rimraf lib",
     "compile": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
