@@ -1,6 +1,5 @@
 {
   "name": "firestore-invoice-stripe",
-  "description": "Collect payments from your customers by emailing invoices",
   "main": "lib/index.js",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
