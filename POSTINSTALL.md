@@ -139,11 +139,11 @@ Here's how to set up the webhook and configure your extension to use it:
 
 1. Configure your webhook:
 
-    a. Go to the [Stripe dashboard.](https://dashboard.stripe.com/test/webhooks)
+    1. Go to the [Stripe dashboard.](https://dashboard.stripe.com/test/webhooks)
 
-    b. Use the URL of your extension's function as the endpoint URL. Here's your function's URL: `${function:updateInvoice.url}`
+    1. Use the URL of your extension's function as the endpoint URL. Here's your function's URL: `${function:updateInvoice.url}`
 
-    c. Select all the invoice events.
+    1. Select all the invoice events.
 
 1. Using the Firebase console or Firebase CLI, [reconfigure](https://firebase.google.com/docs/extensions/manage-installed-extensions#reconfigure) your extension with your webhook’s signing secret (such as, `whsec_12345678`). Enter the value in the parameter called `Stripe webhook secret`.
 
