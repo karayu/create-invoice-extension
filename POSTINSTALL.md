@@ -4,9 +4,9 @@ You can test out this extension right away!
 
 1. Go to your [Cloud Firestore dashboard](https://console.firebase.google.com/project/${param:PROJECT_ID}/database/firestore/data) in the Firebase console.
 
-2. If it doesn't already exist, create the collection you specified during installation: `${param:INVOICES_COLLECTION}`
+1. If it doesn't already exist, create the collection you specified during installation: `${param:INVOICES_COLLECTION}`
 
-3. Test the invoicing functionality by adding a document to your collection, for example:
+1. Test the invoicing functionality by adding a document to your collection, for example:
 
     ```js
     email: "customer@example.com",
@@ -22,7 +22,7 @@ You can test out this extension right away!
     }]
     ```
 
-4. Look in your [Stripe dashboard](https://dashboard.stripe.com/test/invoices) for a record of the test invoice.
+1. Look in your [Stripe dashboard](https://dashboard.stripe.com/test/invoices) for a record of the test invoice.
 
 **Note:** Stripe only sends an email to your customer when the extension is using Stripe's live mode but not when using test mode. If you configured your extension with a test mode secret API key, you'll need to [reconfigure your installed extension](https://firebase.google.com/docs/extensions/manage-installed-extensions?platform=console#reconfigure) with your [live mode key](https://dashboard.stripe.com/apikeys) before actually using the extension for customer invoicing.
 
@@ -137,7 +137,7 @@ Here's how to set up the webhook and configure your extension to use it:
 1. To enable the Stripe backend to trigger the webhook, make the extension's `updateInvoice` function public by following [these steps](https://cloud.google.com/functions/docs/securing/managing-access-iam#allowing_unauthenticated_function_invocation) in the Google Cloud console. Here's the official name of the function displayed in the console:
 `${function:updateInvoice.name}`
 
-2. Configure your webhook:
+1. Configure your webhook:
 
     a. Go to the [Stripe dashboard.](https://dashboard.stripe.com/test/webhooks)
 
@@ -145,7 +145,7 @@ Here's how to set up the webhook and configure your extension to use it:
 
     c. Select all the invoice events.
 
-3. Using the Firebase console or Firebase CLI, [reconfigure your extension with your webhook’s signing secret (such as, `whsec_12345678`). Enter the value in the parameter called `Stripe webhook secret`.
+1. Using the Firebase console or Firebase CLI, [reconfigure](https://firebase.google.com/docs/extensions/manage-installed-extensions#reconfigure) your extension with your webhook’s signing secret (such as, `whsec_12345678`). Enter the value in the parameter called `Stripe webhook secret`.
 
 The webhook fires whenever the invoice's status updates in the Stripe dashboard. The first time the webhook fires, it finds the relevant document in Cloud Firestore, then creates two fields: `stripeInvoiceStatus` and `lastStripeEvent`. If the webhook fires subsequent times for the same invoice, it will update those same fields.
 
@@ -153,7 +153,7 @@ The webhook fires whenever the invoice's status updates in the Stripe dashboard.
 
 * `stripeInvoiceStatus` is the relevant end status (for example, `paid`).
 
-Read more about Stripe’s invoicing workflow and the possible values for these two fields in the [Stripe documentation.](https://stripe.com/docs/billing/invoices/workflow#invoice-status-transition-endpoints-and-webhooks) Note that for this extension, if the event type is `invoice.payment_failed`, its end status will be set to `payment_failed`.
+Read more about Stripe’s invoicing workflow and the possible values for these two fields in the [Stripe documentation](https://stripe.com/docs/billing/invoices/workflow#invoice-status-transition-endpoints-and-webhooks). Note that for this extension, if the event type is `invoice.payment_failed`, its end status will be set to `payment_failed`.
 
 ### Monitoring
 

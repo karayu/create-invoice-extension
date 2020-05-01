@@ -21,7 +21,7 @@ admin.initializeApp();
 /* Creates a new invoice using Stripe */
 const createInvoice = async function (customer, orderItems, daysUntilDue, idempotencyKey) {
     try {
-        // Create an invoice item for each item in the datastore JSON
+        // Create an invoice item for each item in the document
         const itemPromises = orderItems.map(item => {
             return stripe.invoiceItems.create({
                 customer: customer.id,
@@ -57,13 +57,13 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
         // Background functions fire "at least once"
         // https://firebase.google.com/docs/functions/locations#background_functions
         //
-        // This event id will be the same for the same Firestore write
+        // This event ID will be the same for the same Cloud Firestore write
         // Use this as an idempotency key when calling the Stripe API
         const eventId = context.eventId;
         logs.startInvoiceCreate();
         let email;
         if (payload.uid) {
-            // Look up the Firebase Auth UserRecord to get the email
+            // Look up the Firebase Authentication UserRecord to get the email
             const user = await admin.auth().getUser(payload.uid);
             email = user.email;
         }
@@ -71,7 +71,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
             // Use the email provided in the payload
             email = payload.email;
         }
-        // Check to see if we already have a customer in Stripe with email address
+        // Check to see if there's a Customer associated with the email address
         let customers = await stripe.customers.list({ email: payload.email });
         let customer;
         if (customers.data.length) {
@@ -91,7 +91,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
         }
         const invoice = await createInvoice(customer, payload.items, daysUntilDue, eventId);
         if (invoice.id) {
-            // Write the Stripe Invoice ID back to the document in Firestore
+            // Write the Stripe Invoice ID back to the document in Cloud Firestore
             // so that we can find it in the webhook
             await snap.ref.update({
                 stripeInvoiceId: invoice.id,
@@ -125,7 +125,7 @@ const relevantInvoiceEvents = new Set([
     "invoice.voided",
     "invoice.marked_uncollectible"
 ]);
-/* A Stripe webhook that updates invoices in Firestore */
+/* A Stripe webhook that updates each invoice's status in Cloud in Firestore */
 exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     let event;
     // Instead of getting the `Stripe.Event`
@@ -153,7 +153,7 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     }
     if (!relevantInvoiceEvents.has(eventType)) {
         logs.ignoreEvent(eventType);
-        // Return a response to Stripe acknowledge receipt of the event
+        // Return a response to Stripe to acknowledge receipt of the event
         resp.json({ received: true });
         return;
     }
@@ -163,14 +163,13 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
         .collection(process.env.DB_PATH)
         .where("stripeInvoiceId", "==", invoice.id)
         .get();
-    // If we don't have exactly 1 invoice, something went wrong
     if (invoicesInFirestore.size !== 1) {
         logs.unexpectedInvoiceAmount(invoicesInFirestore.size, invoice.id);
         resp.status(500).send(`Invoice not found.`);
         return;
     }
-    // Keep a special status for payment_failed
-    // because otherwise the invoice would still be marked "open"
+    // Keep a special status for `payment_failed`
+    // because otherwise the invoice would still be marked `open`
     const invoiceStatus = eventType === "invoice.payment_failed"
         ? "payment_failed"
         : invoice.status;
