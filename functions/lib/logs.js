@@ -5,7 +5,7 @@ function startInvoiceCreate() {
 }
 exports.startInvoiceCreate = startInvoiceCreate;
 function startInvoiceUpdate(eventType) {
-    console.log(`🙂 Received new invoice event "eventType", starting processing`);
+    console.log(`🙂 Received new invoice event ${eventType}, starting processing`);
 }
 exports.startInvoiceUpdate = startInvoiceUpdate;
 function error(err) {
