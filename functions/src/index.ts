@@ -177,7 +177,7 @@ export const updateInvoice = functions.handler.https.onRequest(
       event = stripe.webhooks.constructEvent(
         req.rawBody,
         req.headers["stripe-signature"],
-        process.env.STRIPE_ENDPOINT_SECRET
+        process.env.STRIPE_WEBHOOK_SECRET
       );
     } catch (err) {
       logs.badSignature(err);

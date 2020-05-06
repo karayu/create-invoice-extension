@@ -46,7 +46,7 @@ function invoiceSent(id, email, hostedInvoiceUrl) {
 }
 exports.invoiceSent = invoiceSent;
 function badSignature(err) {
-    console.error("😞[Error] Webhook signature verification failed. Is your STRIPE_ENDPOINT_SECRET configured correctly?", err);
+    console.error("😞[Error] Webhook signature verification failed. Is your STRIPE_WEBHOOK_SECRET configured correctly?", err);
 }
 exports.badSignature = badSignature;
 function malformedEvent(event) {
