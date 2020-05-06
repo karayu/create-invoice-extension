@@ -139,7 +139,7 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     // use the Stripe webhooks API to make sure
     // this webhook call came from a trusted source
     try {
-        event = stripe.webhooks.constructEvent(req.rawBody, req.headers["stripe-signature"], process.env.STRIPE_ENDPOINT_SECRET);
+        event = stripe.webhooks.constructEvent(req.rawBody, req.headers["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);
     }
     catch (err) {
         logs.badSignature(err);

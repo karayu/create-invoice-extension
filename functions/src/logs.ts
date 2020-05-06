@@ -70,7 +70,7 @@ export function invoiceSent(
 
 export function badSignature(err: Error) {
   console.error(
-    "😞[Error] Webhook signature verification failed. Is your STRIPE_ENDPOINT_SECRET configured correctly?",
+    "😞[Error] Webhook signature verification failed. Is your STRIPE_WEBHOOK_SECRET configured correctly?",
     err
   );
 }
