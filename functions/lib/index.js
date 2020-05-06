@@ -17,6 +17,12 @@ const logs = __importStar(require("./logs"));
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2019-12-03"
 });
+// Register extension as a Stripe plugin
+// https://stripe.com/docs/building-plugins#setappinfo
+stripe.setAppInfo({
+    name: "Firebase firestore-invoice-stripe",
+    version: "0.1.0"
+});
 admin.initializeApp();
 /* Creates a new invoice using Stripe */
 const createInvoice = async function (customer, orderItems, daysUntilDue, idempotencyKey) {
@@ -71,7 +77,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
             // Use the email provided in the payload
             email = payload.email;
         }
-        // Check to see if there's a Customer associated with the email address
+        // Check to see if there's a Stripe customer associated with the email address
         let customers = await stripe.customers.list({ email: payload.email });
         let customer;
         if (customers.data.length) {
@@ -80,11 +86,11 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
             logs.customerRetrieved(customer.id);
         }
         else {
-            // Create new customer on Stripe with email
+            // Create new Stripe customer with this email
             customer = await stripe.customers.create({
                 email,
                 metadata: {
-                    createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
+                    createdBy: "Created by the Firebase Extension: Send Invoices using Stripe" // optional metadata, adds a note
                 }
             }, { idempotencyKey: `customers-create-${eventId}` });
             logs.customerCreated(customer.id);
@@ -125,7 +131,7 @@ const relevantInvoiceEvents = new Set([
     "invoice.voided",
     "invoice.marked_uncollectible"
 ]);
-/* A Stripe webhook that updates each invoice's status in Cloud in Firestore */
+/* A Stripe webhook that updates each invoice's status in Cloud Firestore */
 exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     let event;
     // Instead of getting the `Stripe.Event`

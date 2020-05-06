@@ -8,6 +8,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2019-12-03"
 });
 
+// Register extension as a Stripe plugin
+// https://stripe.com/docs/building-plugins#setappinfo
+stripe.setAppInfo({
+  name: "Firebase firestore-invoice-stripe",
+  version: "0.1.0"
+});
+
 admin.initializeApp();
 
 /* Creates a new invoice using Stripe */
