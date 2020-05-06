@@ -86,7 +86,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         email = payload.email;
       }
 
-      // Check to see if there's a Customer associated with the email address
+      // Check to see if there's a Stripe customer associated with the email address
       let customers: Stripe.ApiList<Stripe.Customer> = await stripe.customers.list(
         { email: payload.email }
       );
@@ -97,12 +97,12 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         customer = customers.data[0];
         logs.customerRetrieved(customer.id);
       } else {
-        // Create new customer on Stripe with email
+        // Create new Stripe customer with this email
         customer = await stripe.customers.create(
           {
             email,
             metadata: {
-              createdBy: "Created by Stripe Firebase extension" // optional metadata, adds a note
+              createdBy: "Created by the Firebase Extension: Send Invoices using Stripe" // optional metadata, adds a note
             }
           },
           { idempotencyKey: `customers-create-${eventId}` }
@@ -157,7 +157,7 @@ const relevantInvoiceEvents = new Set([
   "invoice.marked_uncollectible"
 ]);
 
-/* A Stripe webhook that updates each invoice's status in Cloud in Firestore */
+/* A Stripe webhook that updates each invoice's status in Cloud Firestore */
 export const updateInvoice = functions.handler.https.onRequest(
   async (req: functions.https.Request, resp) => {
     let event: Stripe.Event;

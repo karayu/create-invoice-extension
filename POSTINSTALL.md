@@ -103,17 +103,13 @@ Always add an invoice document from your server -- this ensures that your custom
 
 #### Update Cloud Firestore security rules
 
-##### Creating Invoices
+**Creating Invoices**: You should prevent client access to the ${param:INVOICES_COLLECTION} collection to avoid potential abuse (you don't want users to send arbitrary emails from your company's address!). 
 
-You should prevent client access to the ${param:INVOICES_COLLECTION} collection to avoid potential abuse (you don't want users to send arbitrary emails from your company's address!). You can use security rules to restrict write access (`allow write: if false;`) to your invoices collection so that new invoices can only be added by a trusted server.
+You can use security rules to restrict write access (`allow write: if false;`) to your invoices collection so that new invoices can only be added by a trusted server.
 
 In addition, you can use security rules to validate the data of each new invoice.
 
-##### Reading invoices
-
-It's important to ensure that one customer can't read another customer's invoicing information. You can use security rules to restrict read access for an invoice document to its associated customer by checking the `email` or `uid` field against `request.auth.uid` or `request.auth.token.email`.
-
-Security rules will vary from application to application, but you should always make sure that emails are sent only to intended recipients and free-form content is kept to a minimum.
+**Reading invoices**: It's important to ensure that one customer can't read another customer's invoicing information. You can use security rules to restrict read access for an invoice document to its associated customer by checking the `email` or `uid` field against `request.auth.uid` or `request.auth.token.email`.
 
 #### Use your extension with Stripe's live mode
 
