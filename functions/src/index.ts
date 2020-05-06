@@ -8,6 +8,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2019-12-03"
 });
 
+stripe.setAppInfo({
+  name: 'firestore-invoice-stripe',
+  version: '0.1.0'
+});
+
 admin.initializeApp();
 
 /* Creates a new invoice using Stripe */
