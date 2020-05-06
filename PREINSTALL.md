@@ -1,3 +1,5 @@
+**IMPORTANT: This extension is part of the Firebase Alpha program. [Alpha extensions](https://accounts.google.com/AccountChooser?service=gerritcodereview&continue=https://dev-partners.googlesource.com/login/samples/firebase/extensions-alpha/) are confidential, and their functionality might change in backward-incompatible ways before official, public release. We do not recommend installing Alpha extensions in production apps.**
+
 Use this extension to create and send brandable customer invoices using the payments platform [Stripe](https://www.stripe.com/).
 
 The invoices are automatically customized with the logo and color theme of your business that you've set up in Stripe. After the invoice is sent, you can use the Stripe dashboard to track whether the customer has paid and how much money you processed with detailed reporting and charts.
