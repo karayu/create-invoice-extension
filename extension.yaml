@@ -7,8 +7,8 @@ description: Creates and sends brandable customer invoices using the Stripe paym
 
 license: Apache-2.0
 
-sourceUrl: https://accounts.google.com/AccountChooser?service=gerritcodereview&continue=https://dev-partners.googlesource.com/samples/firebase/extensions-alpha/%2B/refs/heads/master/<TODO-name-of-extension>
-releaseNotesUrl: https://accounts.google.com/AccountChooser?service=gerritcodereview&continue=https://dev-partners.googlesource.com/samples/firebase/extensions-alpha/%2B/refs/heads/master/<TODO-name-of-extension>/CHANGELOG.md
+sourceUrl: https://accounts.google.com/AccountChooser?service=gerritcodereview&continue=https://dev-partners.googlesource.com/samples/firebase/extensions-alpha/%2B/refs/heads/master/firestore-invoice-stripe
+releaseNotesUrl: https://accounts.google.com/AccountChooser?service=gerritcodereview&continue=https://dev-partners.googlesource.com/samples/firebase/extensions-alpha/%2B/refs/heads/master/firestore-invoice-stripe/CHANGELOG.md
 
 author:
   authorName: Stripe

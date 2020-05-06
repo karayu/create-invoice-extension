@@ -4,8 +4,8 @@ The invoices are automatically customized with the logo and color theme of your 
 
 This extension listens to your specified Cloud Firestore collection for new documents (like the example below). When you add a document, Stripe uses the invoice information in the document to create an invoice in their system then sends the invoice to the email address specified in the document. You can optionally manage your customer email addresses using [Firebase Authentication](https://firebase.google.com/docs/auth) user IDs. 
 
-```json
-email: 'customer@example.com',
+```js
+email: "customer@example.com",
 items: [{
     amount: 2000,
     currency: "usd",
@@ -40,4 +40,4 @@ This extension uses the following Firebase services which may have associated ch
 
 When you use Firebase Extensions, you're only charged for the underlying resources that you use. A paid-tier billing plan is only required if the extension uses a service that requires a paid-tier plan, for example calling to a Google Cloud Platform API or making outbound network requests to non-Google services. All Firebase services offer a free tier of usage. [Learn more about Firebase billing.](https://firebase.google.com/pricing)
 
-Usage of this extension also requires you to have a Stripe account. You are responsible for any associated costs with your usage of Stripe and the [Stripe Billing product.](https://stripe.com/pricing#billing-pricing)
+Usage of this extension also requires you to have a Stripe account. You are responsible for any associated costs with your usage of Stripe and the [Stripe Billing product](https://stripe.com/pricing#billing-pricing).
