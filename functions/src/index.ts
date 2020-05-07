@@ -3,8 +3,9 @@ import * as functions from "firebase-functions";
 import Stripe from "stripe";
 import { InvoicePayload, OrderItem } from "./interfaces";
 import * as logs from "./logs";
+import config from "./config";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = new Stripe(config.stripeSecretKey, {
   apiVersion: "2019-12-03"
 });
 
@@ -66,7 +67,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
     try {
       const payload = snap.data() as InvoicePayload;
       const daysUntilDue =
-        payload.daysUntilDue || Number(process.env.DAYS_UNTIL_DUE_DEFAULT);
+        payload.daysUntilDue || config.daysUntilDue;
 
       if (!(payload.email || payload.uid) || !payload.items.length) {
         logs.missingPayload(payload);
@@ -177,7 +178,7 @@ export const updateInvoice = functions.handler.https.onRequest(
       event = stripe.webhooks.constructEvent(
         req.rawBody,
         req.headers["stripe-signature"],
-        process.env.STRIPE_WEBHOOK_SECRET
+        config.stripeWebhookSecret
       );
     } catch (err) {
       logs.badSignature(err);
@@ -209,7 +210,7 @@ export const updateInvoice = functions.handler.https.onRequest(
 
     let invoicesInFirestore = await admin
       .firestore()
-      .collection(process.env.DB_PATH)
+      .collection(config.invoicesCollectionPath)
       .where("stripeInvoiceId", "==", invoice.id)
       .get();
 

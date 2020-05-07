@@ -14,7 +14,8 @@ const admin = __importStar(require("firebase-admin"));
 const functions = __importStar(require("firebase-functions"));
 const stripe_1 = __importDefault(require("stripe"));
 const logs = __importStar(require("./logs"));
-const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
+const config_1 = __importDefault(require("./config"));
+const stripe = new stripe_1.default(config_1.default.stripeSecretKey, {
     apiVersion: "2019-12-03"
 });
 // Register extension as a Stripe plugin
@@ -55,7 +56,7 @@ const createInvoice = async function (customer, orderItems, daysUntilDue, idempo
 exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap, context) => {
     try {
         const payload = snap.data();
-        const daysUntilDue = payload.daysUntilDue || Number(process.env.DAYS_UNTIL_DUE_DEFAULT);
+        const daysUntilDue = payload.daysUntilDue || config_1.default.daysUntilDue;
         if (!(payload.email || payload.uid) || !payload.items.length) {
             logs.missingPayload(payload);
             return;
@@ -139,7 +140,7 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     // use the Stripe webhooks API to make sure
     // this webhook call came from a trusted source
     try {
-        event = stripe.webhooks.constructEvent(req.rawBody, req.headers["stripe-signature"], process.env.STRIPE_WEBHOOK_SECRET);
+        event = stripe.webhooks.constructEvent(req.rawBody, req.headers["stripe-signature"], config_1.default.stripeWebhookSecret);
     }
     catch (err) {
         logs.badSignature(err);
@@ -166,7 +167,7 @@ exports.updateInvoice = functions.handler.https.onRequest(async (req, resp) => {
     logs.startInvoiceUpdate(eventType);
     let invoicesInFirestore = await admin
         .firestore()
-        .collection(process.env.DB_PATH)
+        .collection(config_1.default.invoicesCollectionPath)
         .where("stripeInvoiceId", "==", invoice.id)
         .get();
     if (invoicesInFirestore.size !== 1) {
