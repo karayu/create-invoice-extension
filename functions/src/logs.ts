@@ -22,7 +22,7 @@ export function missingPayload(payload: InvoicePayload) {
   if (!payload.email && !payload.uid) {
     console.error(
       new Error(
-        "😞[Error] Missing either a customer email address or Firebase Auth uid"
+        "😞[Error] Missing either a customer email address or Firebase Authentication uid"
       )
     );
   }
@@ -30,7 +30,7 @@ export function missingPayload(payload: InvoicePayload) {
 
 export function stripeError(err: Stripe.StripeCardError) {
   console.error(
-    "😞[Error] An error happened when making a request to the Stripe API:",
+    "😞[Error] Error when making a request to the Stripe API:",
     err
   );
 }
@@ -70,7 +70,7 @@ export function invoiceSent(
 
 export function badSignature(err: Error) {
   console.error(
-    "😞[Error] Webhook signature verification failed. Is your STRIPE_WEBHOOK_SECRET configured correctly?",
+    "😞[Error] Webhook signature verification failed. Is your Stripe webhook secret parameter configured correctly?",
     err
   );
 }
