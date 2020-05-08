@@ -17,12 +17,12 @@ function missingPayload(payload) {
         console.error(new Error("😞[Error] Missing at least one line item in items[]"));
     }
     if (!payload.email && !payload.uid) {
-        console.error(new Error("😞[Error] Missing either a customer email address or Firebase Auth uid"));
+        console.error(new Error("😞[Error] Missing either a customer email address or Firebase Authentication uid"));
     }
 }
 exports.missingPayload = missingPayload;
 function stripeError(err) {
-    console.error("😞[Error] An error happened when making a request to the Stripe API:", err);
+    console.error("😞[Error] Error when making a request to the Stripe API:", err);
 }
 exports.stripeError = stripeError;
 function invoiceCreatedError(invoice) {
@@ -46,7 +46,7 @@ function invoiceSent(id, email, hostedInvoiceUrl) {
 }
 exports.invoiceSent = invoiceSent;
 function badSignature(err) {
-    console.error("😞[Error] Webhook signature verification failed. Is your STRIPE_WEBHOOK_SECRET configured correctly?", err);
+    console.error("😞[Error] Webhook signature verification failed. Is your Stripe webhook secret parameter configured correctly?", err);
 }
 exports.badSignature = badSignature;
 function malformedEvent(event) {
