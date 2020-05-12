@@ -29,16 +29,16 @@ function invoiceCreatedError(invoice) {
     console.error(new Error("😞[Error] Error when creating the invoice:"), invoice);
 }
 exports.invoiceCreatedError = invoiceCreatedError;
-function customerCreated(id) {
-    console.log(`👤 Created a new customer: https://dashboard.stripe.com/test/customers/${id}`);
+function customerCreated(id, livemode) {
+    console.log(`👤 Created a new customer: https://dashboard.stripe.com${livemode ? "" : "/test"}/customers/${id}`);
 }
 exports.customerCreated = customerCreated;
-function customerRetrieved(id) {
-    console.log(`🙋 Found existing customer by email: https://dashboard.stripe.com/test/customers/${id}`);
+function customerRetrieved(id, livemode) {
+    console.log(`🙋 Found existing customer by email: https://dashboard.stripe.com${livemode ? "" : "/test"}/customers/${id}`);
 }
 exports.customerRetrieved = customerRetrieved;
-function invoiceCreated(id) {
-    console.log(`🧾 Created invoice: https://dashboard.stripe.com/test/invoices/${id}`);
+function invoiceCreated(id, livemode) {
+    console.log(`🧾 Created invoice: https://dashboard.stripe.com${livemode ? "" : "/test"}/invoices/${id}`);
 }
 exports.invoiceCreated = invoiceCreated;
 function invoiceSent(id, email, hostedInvoiceUrl) {

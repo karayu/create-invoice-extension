@@ -35,28 +35,28 @@ export function stripeError(err: Stripe.StripeCardError) {
   );
 }
 
-export function invoiceCreatedError(invoice: Stripe.Invoice) {
+export function invoiceCreatedError(invoice?: Stripe.Invoice) {
   console.error(
     new Error("😞[Error] Error when creating the invoice:"),
     invoice
   );
 }
 
-export function customerCreated(id: string) {
+export function customerCreated(id: string, livemode: boolean) {
   console.log(
-    `👤 Created a new customer: https://dashboard.stripe.com/test/customers/${id}`
+    `👤 Created a new customer: https://dashboard.stripe.com${livemode ? "" : "/test"}/customers/${id}`
   );
 }
 
-export function customerRetrieved(id: string) {
+export function customerRetrieved(id: string, livemode: boolean) {
   console.log(
-    `🙋 Found existing customer by email: https://dashboard.stripe.com/test/customers/${id}`
+    `🙋 Found existing customer by email: https://dashboard.stripe.com${livemode ? "" : "/test"}/customers/${id}`
   );
 }
 
-export function invoiceCreated(id: string) {
+export function invoiceCreated(id: string, livemode: boolean) {
   console.log(
-    `🧾 Created invoice: https://dashboard.stripe.com/test/invoices/${id}`
+    `🧾 Created invoice: https://dashboard.stripe.com${livemode ? "" : "/test"}/invoices/${id}`
   );
 }
 

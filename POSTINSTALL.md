@@ -135,7 +135,7 @@ Here's how to set up the webhook and configure your extension to use it:
 
 1. Configure your webhook:
 
-    1. Go to the [Stripe dashboard.](https://dashboard.stripe.com/test/webhooks)
+    1. Go to the [Stripe dashboard.](https://dashboard.stripe.com/webhooks)
 
     1. Use the URL of your extension's function as the endpoint URL. Here's your function's URL: `${function:updateInvoice.url}`
 
