@@ -1,4 +1,4 @@
-# Send invoice using Stripe
+# Send invoices using Stripe
 
 **Description**: Creates and sends brandable customer invoices using the Stripe payments platform
 

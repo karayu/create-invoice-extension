@@ -102,7 +102,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
             // so that we can find it in the webhook
             await snap.ref.update({
                 stripeInvoiceId: invoice.id,
-                stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
+                stripeInvoiceRecord: `https://dashboard.stripe.com${invoice.livemode ? "" : "/test"}/invoices/${invoice.id}`
             });
             // Email the invoice to the customer
             const result = await stripe.invoices.sendInvoice(invoice.id, { idempotencyKey: `invoices-sendInvoice-${eventId}` });
