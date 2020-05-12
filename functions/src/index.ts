@@ -6,14 +6,13 @@ import * as logs from "./logs";
 import config from "./config";
 
 const stripe = new Stripe(config.stripeSecretKey, {
-  apiVersion: "2019-12-03"
-});
-
-// Register extension as a Stripe plugin
-// https://stripe.com/docs/building-plugins#setappinfo
-stripe.setAppInfo({
-  name: "Firebase firestore-invoice-stripe",
-  version: "0.1.0"
+  apiVersion: "2019-12-03",
+  // Register extension as a Stripe plugin
+  // https://stripe.com/docs/building-plugins#setappinfo
+  appInfo: {
+    name: "Firebase firestore-invoice-stripe",
+    version: "0.1.0"
+  }
 });
 
 admin.initializeApp();
@@ -53,7 +52,7 @@ const createInvoice = async function(
       },
       { idempotencyKey: `invoices-create-${idempotencyKey}` }
     );
-
+    logs.invoiceCreated(invoice.id, invoice.livemode)
     return invoice;
   } catch (e) {
     logs.stripeError(e);
@@ -103,7 +102,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
       if (customers.data.length) {
         // Use the existing customer
         customer = customers.data[0];
-        logs.customerRetrieved(customer.id);
+        logs.customerRetrieved(customer.id, customer.livemode);
       } else {
         // Create new Stripe customer with this email
         customer = await stripe.customers.create(
@@ -116,7 +115,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
           { idempotencyKey: `customers-create-${eventId}` }
         );
 
-        logs.customerCreated(customer.id);
+        logs.customerCreated(customer.id, customer.livemode);
       }
 
       const invoice: Stripe.Invoice = await createInvoice(
@@ -126,12 +125,12 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
         eventId
       );
 
-      if (invoice.id) {
+      if (invoice) {
         // Write the Stripe Invoice ID back to the document in Cloud Firestore
         // so that we can find it in the webhook
         await snap.ref.update({
           stripeInvoiceId: invoice.id,
-          stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
+          stripeInvoiceRecord: `https://dashboard.stripe.com${invoice.livemode ? "" : "/test"}/invoices/${invoice.id}`
         });
 
         // Email the invoice to the customer
@@ -146,7 +145,7 @@ export const sendInvoice = functions.handler.firestore.document.onCreate(
           logs.invoiceCreatedError(result);
         }
       } else {
-        logs.invoiceCreatedError(invoice);
+        logs.invoiceCreatedError();
       }
     } catch (e) {
       logs.error(e);

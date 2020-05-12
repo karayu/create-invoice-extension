@@ -16,13 +16,13 @@ const stripe_1 = __importDefault(require("stripe"));
 const logs = __importStar(require("./logs"));
 const config_1 = __importDefault(require("./config"));
 const stripe = new stripe_1.default(config_1.default.stripeSecretKey, {
-    apiVersion: "2019-12-03"
-});
-// Register extension as a Stripe plugin
-// https://stripe.com/docs/building-plugins#setappinfo
-stripe.setAppInfo({
-    name: "Firebase firestore-invoice-stripe",
-    version: "0.1.0"
+    apiVersion: "2019-12-03",
+    // Register extension as a Stripe plugin
+    // https://stripe.com/docs/building-plugins#setappinfo
+    appInfo: {
+        name: "Firebase firestore-invoice-stripe",
+        version: "0.1.0"
+    }
 });
 admin.initializeApp();
 /* Creates a new invoice using Stripe */
@@ -45,6 +45,7 @@ const createInvoice = async function (customer, orderItems, daysUntilDue, idempo
             days_until_due: daysUntilDue,
             auto_advance: true
         }, { idempotencyKey: `invoices-create-${idempotencyKey}` });
+        logs.invoiceCreated(invoice.id, invoice.livemode);
         return invoice;
     }
     catch (e) {
@@ -84,7 +85,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
         if (customers.data.length) {
             // Use the existing customer
             customer = customers.data[0];
-            logs.customerRetrieved(customer.id);
+            logs.customerRetrieved(customer.id, customer.livemode);
         }
         else {
             // Create new Stripe customer with this email
@@ -94,15 +95,15 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
                     createdBy: "Created by the Firebase Extension: Send Invoices using Stripe" // optional metadata, adds a note
                 }
             }, { idempotencyKey: `customers-create-${eventId}` });
-            logs.customerCreated(customer.id);
+            logs.customerCreated(customer.id, customer.livemode);
         }
         const invoice = await createInvoice(customer, payload.items, daysUntilDue, eventId);
-        if (invoice.id) {
+        if (invoice) {
             // Write the Stripe Invoice ID back to the document in Cloud Firestore
             // so that we can find it in the webhook
             await snap.ref.update({
                 stripeInvoiceId: invoice.id,
-                stripeInvoiceRecord: `https://dashboard.stripe.com/invoices/${invoice.id}`
+                stripeInvoiceRecord: `https://dashboard.stripe.com${invoice.livemode ? "" : "/test"}/invoices/${invoice.id}`
             });
             // Email the invoice to the customer
             const result = await stripe.invoices.sendInvoice(invoice.id, { idempotencyKey: `invoices-sendInvoice-${eventId}` });
@@ -115,7 +116,7 @@ exports.sendInvoice = functions.handler.firestore.document.onCreate(async (snap,
             }
         }
         else {
-            logs.invoiceCreatedError(invoice);
+            logs.invoiceCreatedError();
         }
     }
     catch (e) {
