@@ -36,7 +36,7 @@ Before installing this extension, set up the following Firebase services in your
 
 You must also have a Stripe account and a [Stripe API key](https://dashboard.stripe.com/apikeys) before installing this extension.
 
-**Note:** Stripe has a test mode that lets you make API calls without making actual payments. To use this extension with Stripe's test mode, set the extension's `Stripe secret API key` parameter (during extension configuration) to use the test mode key. A test mode key looks like `sk_test_12345`, whereas a live mode key would be `sk_12345`.
+**Note:** Stripe has a test mode that lets you make API calls without making actual payments. To use this extension with Stripe's test mode, set the extension's `Stripe API key` parameter (during extension configuration) to use a test mode key. A test mode key looks like `rk_test_12345`, whereas a live mode key would be `rk_live_12345`. As this extension only requires write access to your Stripe `customers` and `invoices` resources, we recommend that you create a [restricted key](https://stripe.com/docs/keys#limit-access) with limited access to only these resources rather than using your secret key.
 
 #### Pricing
 
@@ -59,7 +59,7 @@ Usage of this extension also requires you to have a Stripe account. You are resp
 
 * Invoices collection: What is the path to the Cloud Firestore collection where you'll store your invoices?
 
-* Stripe secret API key: What is your Stripe secret API key for sending invoices? If desired, you can optionally use a test mode API key for initial testing of your extension, but you'll need to later reconfigure your extension to use a live mode key. Learn more about API keys in your [Stripe dashboard](https://dashboard.stripe.com/apikeys).
+* Stripe API key with restricted access: This extension needs write access to your Stripe customers and invoices. Create a new [restricted key](https://stripe.com/docs/keys#limit-access) and select write access only for the `customers` and `invoices` resources. If desired, you can optionally use a test mode API key for initial testing of your extension, but you'll need to later reconfigure your extension to use a live mode key. Learn more about API keys in your [Stripe dashboard](https://dashboard.stripe.com/apikeys).
 
 * Days until payment is due: What is the default number of days the customer has before their payment is due? The invoice automatically closes after this number of days. You can override this default value for each invoice.
 
