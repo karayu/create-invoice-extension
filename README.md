@@ -59,7 +59,7 @@ Usage of this extension also requires you to have a Stripe account. You are resp
 
 * Invoices collection: What is the path to the Cloud Firestore collection where you'll store your invoices?
 
-* Stripe API key with restricted access: This extension needs write access to your Stripe customers and invoices. Create a new [restricted key](https://stripe.com/docs/keys#limit-access) and select write access only for the `customers` and `invoices` resources. If desired, you can optionally use a test mode API key for initial testing of your extension, but you'll need to later reconfigure your extension to use a live mode key. Learn more about API keys in your [Stripe dashboard](https://dashboard.stripe.com/apikeys).
+* Stripe API key with restricted access: What is your Stripe API key for sending invoices?  We recommend creating a new [restricted key](https://stripe.com/docs/keys#limit-access) with write access only for the `customers` and `invoices` resources. If desired, you can optionally use a test mode API key for initial testing of your extension, but you'll need to later reconfigure your extension to use a live mode key. Learn more about API keys in your [Stripe dashboard](https://dashboard.stripe.com/apikeys).
 
 * Days until payment is due: What is the default number of days the customer has before their payment is due? The invoice automatically closes after this number of days. You can override this default value for each invoice.
 
