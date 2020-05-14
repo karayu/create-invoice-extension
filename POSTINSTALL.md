@@ -24,7 +24,7 @@ You can test out this extension right away!
 
 1. Look in your [Stripe dashboard](https://dashboard.stripe.com/test/invoices) for a record of the test invoice.
 
-**Note:** Stripe only sends an email to your customer when the extension is using Stripe's live mode but not when using test mode. If you configured your extension with a test mode secret API key, you'll need to [reconfigure your installed extension](https://firebase.google.com/docs/extensions/manage-installed-extensions?platform=console#reconfigure) with your [live mode key](https://dashboard.stripe.com/apikeys) before actually using the extension for customer invoicing.
+**Note:** Stripe only sends an email to your customer when the extension is using Stripe's live mode but not when using test mode. If you configured your extension with a test mode API key, you'll need to [reconfigure your installed extension](https://firebase.google.com/docs/extensions/manage-installed-extensions?platform=console#reconfigure) with your [live mode key](https://dashboard.stripe.com/apikeys) before actually using the extension for customer invoicing.
 
 ### Using this extension
 
@@ -118,7 +118,7 @@ When you're ready to use your extension in live mode, make sure you've done each
 * Customize the colors and logo of your invoice in the [branding settings](https://dashboard.stripe.com/settings/branding) of the Stripe dashboard.
 
 * Configure your installed extension to use your [Stripe live mode API key](https://dashboard.stripe.com/apikeys).
-If you initially configured your extension to use a test mode key, then [reconfigure](https://firebase.google.com/docs/extensions/manage-installed-extensions?platform=console#reconfigure) your extension's `Stripe secret API key` parameter to be your live mode key.
+If you initially configured your extension to use a test mode key, then [reconfigure](https://firebase.google.com/docs/extensions/manage-installed-extensions?platform=console#reconfigure) your extension's `Stripe API key` parameter to be your live mode key.
 
 * _(Optional)_ Set up a Stripe webhook to add and update invoice status information to your Cloud Firestore documents. Learn more about this optional feature in the section below.
 
