@@ -106,15 +106,17 @@ params:
     default: invoices
     required: true
 
-  - param: STRIPE_SECRET_KEY
-    label: Stripe secret API key
+  - param: STRIPE_API_KEY
+    label: Stripe API key with restricted access
     description: >-
-      What is your Stripe secret API key for sending invoices?
+      What is your Stripe API key for sending invoices? 
+      We recommend creating a new [restricted key](https://stripe.com/docs/keys#limit-access)
+      with write access only for the `customers` and `invoices` resources.
       If desired, you can optionally use a test mode API key for initial testing
       of your extension, but you'll need to later reconfigure your extension
       to use a live mode key. Learn more about API keys in your
       [Stripe dashboard](https://dashboard.stripe.com/apikeys).
-    example: sk_1234567890
+    example: rk_live_1234567890
     required: true
 
   - param: DAYS_UNTIL_DUE_DEFAULT

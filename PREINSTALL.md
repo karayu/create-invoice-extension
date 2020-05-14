@@ -30,7 +30,7 @@ Before installing this extension, set up the following Firebase services in your
 
 You must also have a Stripe account and a [Stripe API key](https://dashboard.stripe.com/apikeys) before installing this extension.
 
-**Note:** Stripe has a test mode that lets you make API calls without making actual payments. To use this extension with Stripe's test mode, set the extension's `Stripe secret API key` parameter (during extension configuration) to use the test mode key. A test mode key looks like `sk_test_12345`, whereas a live mode key would be `sk_12345`.
+**Note:** Stripe has a test mode that lets you make API calls without making actual payments. To use this extension with Stripe's test mode, set the extension's `Stripe API key` parameter (during extension configuration) to use a test mode key. A test mode key looks like `rk_test_12345`, whereas a live mode key would be `rk_live_12345`. As this extension only requires write access to your Stripe `customers` and `invoices` resources, we recommend that you create a [restricted key](https://stripe.com/docs/keys#limit-access) with limited access to only these resources rather than using your secret key.
 
 #### Pricing
 
