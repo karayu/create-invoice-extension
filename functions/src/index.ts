@@ -27,7 +27,7 @@ const createInvoice = async function(
   try {
     // Create an invoice item for each item in the document
     const itemPromises: Array<Promise<Stripe.InvoiceItem>> = orderItems.map(
-      item => {
+      (item, index) => {
         return stripe.invoiceItems.create(
           {
             customer: customer.id,
@@ -35,7 +35,7 @@ const createInvoice = async function(
             currency: item.currency,
             description: item.description
           },
-          { idempotencyKey: `invoiceItems-create-${idempotencyKey}` }
+          { idempotencyKey: `invoiceItems-create-${idempotencyKey}-${index}` }
         );
       }
     );

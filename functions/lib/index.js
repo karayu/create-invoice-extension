@@ -29,13 +29,13 @@ admin.initializeApp();
 const createInvoice = async function (customer, orderItems, daysUntilDue, idempotencyKey) {
     try {
         // Create an invoice item for each item in the document
-        const itemPromises = orderItems.map(item => {
+        const itemPromises = orderItems.map((item, index) => {
             return stripe.invoiceItems.create({
                 customer: customer.id,
                 amount: item.amount,
                 currency: item.currency,
                 description: item.description
-            }, { idempotencyKey: `invoiceItems-create-${idempotencyKey}` });
+            }, { idempotencyKey: `invoiceItems-create-${idempotencyKey}-${index}` });
         });
         // Create the individual invoice items for this customer from the items in payload
         const items = await Promise.all(itemPromises);
