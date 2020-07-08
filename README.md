@@ -10,7 +10,7 @@ Use this extension to create and send brandable customer invoices using the paym
 
 The invoices are automatically customized with the logo and color theme of your business that you've set up in Stripe. After the invoice is sent, you can use the Stripe dashboard to track whether the customer has paid and how much money you processed with detailed reporting and charts.
 
-This extension listens to your specified Cloud Firestore collection for new documents (like the example below). When you add a document, Stripe uses the invoice information in the document to create an invoice in their system then sends the invoice to the email address specified in the document. You can optionally manage your customer email addresses using [Firebase Authentication](https://firebase.google.com/docs/auth) user IDs. 
+This extension listens to your specified Cloud Firestore collection for new documents (like the example below). When you add a document, Stripe uses the invoice information in the document to create an invoice in their system then sends the invoice to the email address specified in the document. You can optionally manage your customer email addresses using [Firebase Authentication](https://firebase.google.com/docs/auth) user IDs.
 
 ```js
 email: "customer@example.com",
@@ -31,24 +31,26 @@ An optional feature of this extension is to automatically update the invoice's s
 
 Before installing this extension, set up the following Firebase services in your Firebase project:
 
-* [Cloud Firestore](https://firebase.google.com/docs/firestore) to store invoice information and optionally invoice status
-* [Firebase Authentication](https://firebase.google.com/docs/auth) to optionally manage email and customer data
+- [Cloud Firestore](https://firebase.google.com/docs/firestore) to store invoice information and optionally invoice status
+- [Firebase Authentication](https://firebase.google.com/docs/auth) to optionally manage email and customer data
 
 You must also have a Stripe account and a [Stripe API key](https://dashboard.stripe.com/apikeys) before installing this extension.
 
 **Note:** Stripe has a test mode that lets you make API calls without making actual payments. To use this extension with Stripe's test mode, set the extension's `Stripe API key` parameter (during extension configuration) to use a test mode key. A test mode key looks like `rk_test_12345`, whereas a live mode key would be `rk_live_12345`. As this extension only requires write access to your Stripe `customers` and `invoices` resources, we recommend that you create a [restricted key](https://stripe.com/docs/keys#limit-access) with limited access to only these resources rather than using your secret key.
 
-#### Pricing
+#### Billing
 
 This extension uses the following Firebase services which may have associated charges:
 
-* Cloud Firestore
-* Cloud Functions
-* Firebase Authentication (optional)
-
-When you use Firebase Extensions, you're only charged for the underlying resources that you use. A paid-tier billing plan is only required if the extension uses a service that requires a paid-tier plan, for example calling to a Google Cloud Platform API or making outbound network requests to non-Google services. All Firebase services offer a free tier of usage. [Learn more about Firebase billing.](https://firebase.google.com/pricing)
+- Cloud Firestore
+- Cloud Functions
+- Firebase Authentication (optional)
 
 Usage of this extension also requires you to have a Stripe account. You are responsible for any associated costs with your usage of Stripe and the [Stripe Billing product](https://stripe.com/pricing#billing-pricing).
+
+#### Note from Firebase
+
+When you use Firebase Extensions, you're only charged for the underlying resources that you use. A paid-tier billing plan is only required if the extension uses a service that requires a paid-tier plan, for example calling to a Google Cloud Platform API or making outbound network requests to non-Google services. [Learn more about Firebase billing.](https://firebase.google.com/pricing)
 
 
 
