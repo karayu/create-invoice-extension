@@ -40,8 +40,14 @@ This extension uses the following Firebase services which may have associated ch
 - Cloud Functions
 - Firebase Authentication (optional)
 
-Usage of this extension also requires you to have a Stripe account. You are responsible for any associated costs with your usage of Stripe and the [Stripe Billing product](https://stripe.com/pricing#billing-pricing).
+This extension also uses the following third-party services:
 
-#### Note from Firebase
+- Stripe Billing ([pricing information](https://stripe.com/pricing#billing-pricing))
 
-When you use Firebase Extensions, you're only charged for the underlying resources that you use. A paid-tier billing plan is only required if the extension uses a service that requires a paid-tier plan, for example calling to a Google Cloud Platform API or making outbound network requests to non-Google services. [Learn more about Firebase billing.](https://firebase.google.com/pricing)
+You are responsible for any costs associated with your use of these services.
+
+### Note from Firebase
+
+To install this extension, your Firebase project must be on the Blaze (pay-as-you-go) plan. You will only be charged for the resources you use. Most Firebase services offer a free tier for low-volume use. [Learn more about Firebase billing.](https://firebase.google.com/pricing)
+
+Starting August 17 2020, you will be billed a small amount (typically less than $0.10) when you install or reconfigure this extension. See the [Cloud Functions for Firebase billing FAQ](https://firebase.google.com/support/faq#expandable-15) for a detailed explanation.
